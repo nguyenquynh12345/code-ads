@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Grid, List, Upload, Trash2, Search, Filter, Eye } from "lucide-react";
+import { Grid, List, Upload, Trash2, Search, Filter, Eye, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface MediaFile {
   id: number;
@@ -29,6 +30,7 @@ export default function MediaManagerPage() {
   const [filter, setFilter] = useState<"all" | "image" | "file">("all");
   const [isDragging, setIsDragging] = useState(false);
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filtered = files.filter(f =>
     f.name.toLowerCase().includes(search.toLowerCase()) &&
@@ -44,10 +46,8 @@ export default function MediaManagerPage() {
     setSelected([]);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const uploaded = Array.from(e.dataTransfer.files).map((f, i) => ({
+  const handleFiles = (fileList: FileList) => {
+    const uploaded = Array.from(fileList).map((f, i) => ({
       id: Date.now() + i,
       name: f.name,
       size: `${(f.size / 1024 / 1024).toFixed(1)} MB`,
@@ -56,6 +56,16 @@ export default function MediaManagerPage() {
       date: new Date().toISOString().split("T")[0],
     }));
     setFiles(prev => [...uploaded, ...prev]);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files) handleFiles(e.dataTransfer.files);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) handleFiles(e.target.files);
   };
 
   return (
@@ -97,7 +107,17 @@ export default function MediaManagerPage() {
               onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              style={{ cursor: "pointer" }}
             >
+              <input 
+                type="file" 
+                multiple 
+                hidden 
+                ref={fileInputRef} 
+                onChange={handleFileSelect} 
+                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+              />
               <div className="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex p-3 mb-2 shadow-sm">
                 <Upload size={24} />
               </div>
@@ -190,14 +210,40 @@ export default function MediaManagerPage() {
         </div>
       </div>
 
-      {lightbox && (
-        <div className="position-fixed inset-0 bg-dark bg-opacity-90 d-flex align-items-center justify-content-center p-4 z-3" style={{ zIndex: 9999 }} onClick={() => setLightbox(null)}>
-          <img src={lightbox} className="img-fluid rounded-4 shadow-lg max-vh-80" alt="Lightbox" />
-          <button className="btn btn-light rounded-circle position-absolute top-0 end-0 m-4 shadow-lg" onClick={() => setLightbox(null)}>
-             <i className="bi bi-x-lg" />
-          </button>
-        </div>
-      )}
+      <AnimatePresence>
+        {lightbox && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-4 bg-black bg-opacity-75"
+            style={{ zIndex: 1100, backdropFilter: "blur(10px)" }}
+            onClick={() => setLightbox(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="position-relative"
+              onClick={e => e.stopPropagation()}
+            >
+              <button 
+                className="btn btn-light rounded-circle position-absolute top-0 end-0 m-3 shadow-lg d-flex align-items-center justify-content-center p-0"
+                style={{ width: 40, height: 40, zIndex: 1101 }}
+                onClick={() => setLightbox(null)}
+              >
+                <X size={20} />
+              </button>
+              <img 
+                src={lightbox} 
+                className="img-fluid rounded-4 shadow-2xl border border-white border-opacity-20" 
+                alt="preview"
+                style={{ maxHeight: "85vh", objectFit: "contain" }} 
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <style jsx>{`
         .media-card:hover .hover-overlay { opacity: 1; }

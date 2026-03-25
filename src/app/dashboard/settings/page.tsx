@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import { useToast } from "@/components/ToastProvider";
+import { motion, AnimatePresence } from "framer-motion";
 
 const accentColors = [
   { name: "Indigo", value: "#6366f1" },
@@ -65,6 +66,11 @@ export default function SettingsPage() {
 
   return (
     <>
+      <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
       <div className="mb-4">
         <h4 className="fw-bold mb-1">Cài đặt hệ thống</h4>
         <p className="text-muted text-sm mb-0">Cấu hình tài khoản và tuỳ chọn ứng dụng</p>
@@ -73,7 +79,7 @@ export default function SettingsPage() {
       <div className="row g-4">
         {/* Sidebar Nav */}
         <div className="col-lg-3">
-          <div className="card content-card p-0 overflow-hidden shadow-sm">
+          <div className="card content-card glass-card p-0 overflow-hidden shadow-sm">
             <div className="list-group list-group-flush border-0">
               {tabs.map(tab => (
                 <button
@@ -91,7 +97,15 @@ export default function SettingsPage() {
 
         {/* Content Area */}
         <div className="col-lg-9">
-          <div className="card content-card p-4 shadow-sm">
+          <div className="card content-card glass-card p-4 shadow-sm min-vh-60">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+              >
 
             {/* ── Tài khoản ── */}
             {activeTab === "account" && (
@@ -100,7 +114,7 @@ export default function SettingsPage() {
                 {/* Avatar upload */}
                 <div className="d-flex align-items-center gap-4 mb-4 p-4 bg-light bg-opacity-50 rounded-4 border">
                   <div className="position-relative">
-                    <img src={avatarSrc} alt="avatar" className="rounded-circle shadow-sm border border-2 border-white" width={80} height={80} style={{ objectFit: "cover" }} />
+                    <img src={avatarSrc} alt="avatar" className="rounded-circle shadow-sm border border-2 border-primary border-opacity-25" width={80} height={80} style={{ objectFit: "cover" }} />
                     <button
                       className="btn btn-primary btn-sm rounded-circle position-absolute bottom-0 end-0 shadow"
                       style={{ width: 28, height: 28, padding: 0 }}
@@ -348,14 +362,16 @@ export default function SettingsPage() {
                 </button>
               </>
             )}
-
+            </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </div>
+      </motion.div>
       <style jsx>{`
         .hover-scale:hover { transform: scale(1.1); }
         .hover-shadow:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .hover-bg-light:hover { background: rgba(0,0,0,0.02); }
+        .hover-bg-light:hover { background: var(--sidebar-hover); }
       `}</style>
     </>
   );

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "./ThemeProvider";
 
 interface SearchResult {
   id: string;
@@ -30,10 +31,17 @@ const users: SearchResult[] = [
   { id: "u3", label: "Lê Văn Cường", desc: "cuong.le@email.com — User", icon: "bi-person", href: "/dashboard/users", category: "Người dùng" },
 ];
 
-const allResults = [...pages, ...users];
+const actions: SearchResult[] = [
+    { id: "theme-dark", label: "Bật chế độ tối", desc: "Chuyển giao diện sang màu tối", icon: "bi-moon-stars", category: "Hành động nhanh", href: "" },
+    { id: "theme-light", label: "Bật chế độ sáng", desc: "Chuyển giao diện sang màu sáng", icon: "bi-sun", category: "Hành động nhanh", href: "" },
+    { id: "goto-home", label: "Về trang chủ", desc: "Chuyển đến màn hình Dashboard", icon: "bi-house", href: "/dashboard", category: "Trang" },
+];
+
+const allResults = [...pages, ...users, ...actions];
 
 export default function CommandPalette() {
   const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -48,9 +56,13 @@ export default function CommandPalette() {
     : pages.slice(0, 6);
 
   const grouped = filtered.reduce<Record<string, SearchResult[]>>((acc, r) => {
-    (acc[r.category] = acc[r.category] || []).push(r);
+    const cat = r.category;
+    (acc[cat] = acc[cat] || []).push(r);
     return acc;
-  }, {});
+  }, { "Hành động nhanh": query ? [] : actions.slice(0, 2) });
+  
+  // Cleanup empty categories
+  if (!query && grouped["Hành động nhanh"].length === 0) delete grouped["Hành động nhanh"];
 
   const flatResults = Object.values(grouped).flat();
 
@@ -63,9 +75,17 @@ export default function CommandPalette() {
 
   const closePalette = useCallback(() => setOpen(false), []);
 
-  const navigate = (href: string) => {
-    closePalette();
-    router.push(href);
+  const navigate = (item: SearchResult) => {
+    if (item.id.startsWith("theme-")) {
+        const target = item.id.split("-")[1];
+        if (theme !== target) toggleTheme();
+        closePalette();
+        return;
+    }
+    if (item.href) {
+        closePalette();
+        router.push(item.href);
+    }
   };
 
   useEffect(() => {
@@ -90,7 +110,7 @@ export default function CommandPalette() {
           e.preventDefault();
           setActiveIndex(i => Math.max(i - 1, 0));
         } else if (e.key === "Enter" && flatResults[activeIndex]) {
-          navigate(flatResults[activeIndex].href);
+          navigate(flatResults[activeIndex]);
         }
       };
       window.addEventListener("keydown", handler);
@@ -151,7 +171,7 @@ export default function CommandPalette() {
                       className={`w-100 d-flex align-items-center gap-3 px-4 py-3 border-0 text-start transition-all ${activeIndex === idx ? "bg-primary bg-opacity-10" : ""}`}
                       style={{ background: activeIndex === idx ? undefined : "transparent", cursor: "pointer" }}
                       onMouseEnter={() => setActiveIndex(idx)}
-                      onClick={() => navigate(item.href)}
+                      onClick={() => navigate(item)}
                     >
                       <div
                         className={`rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm ${activeIndex === idx ? "bg-primary text-white scale-110" : "bg-light text-secondary opacity-75"}`}

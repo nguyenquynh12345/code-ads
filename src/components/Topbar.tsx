@@ -72,7 +72,7 @@ export default function Topbar({ title }: { title?: string }) {
               width={28}
               height={28}
             />
-            <span className="d-none d-sm-inline text-dark small fw-medium">Admin</span>
+            <span className="d-none d-sm-inline text-dark-emphasis small fw-medium">Admin</span>
             <i className="bi bi-chevron-down small text-muted" />
           </button>
           <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-1">
