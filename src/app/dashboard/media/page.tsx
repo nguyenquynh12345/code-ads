@@ -1,61 +1,97 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Grid, List, Upload, Trash2, Search, Filter, Eye, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface MediaFile {
   id: number;
-  name: string;
-  size: string;
-  type: "image" | "file";
+  filename: string;
+  size: number;
+  mimetype: string;
   url: string;
-  date: string;
+  createdAt: string;
 }
-
-const initialFiles: MediaFile[] = [
-  { id: 1, name: "banner-summer.jpg", size: "1.2 MB", type: "image", url: "https://picsum.photos/400/300?random=1", date: "2024-03-20" },
-  { id: 2, name: "logo-dark.png", size: "450 KB", type: "image", url: "https://picsum.photos/200/200?random=2", date: "2024-03-19" },
-  { id: 3, name: "annual-report.pdf", size: "2.5 MB", type: "file", url: "#", date: "2024-03-18" },
-  { id: 4, name: "product-01.webp", size: "890 KB", type: "image", url: "https://picsum.photos/400/400?random=3", date: "2024-03-17" },
-  { id: 5, name: "user-feedback.xlsx", size: "1.1 MB", type: "file", url: "#", date: "2024-03-16" },
-  { id: 6, name: "team-photo.jpg", size: "3.2 MB", type: "image", url: "https://picsum.photos/600/400?random=4", date: "2024-03-15" },
-];
 
 export default function MediaManagerPage() {
   const [view, setView] = useState<"grid" | "list">("grid");
-  const [files, setFiles] = useState<MediaFile[]>(initialFiles);
+  const [files, setFiles] = useState<MediaFile[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "image" | "file">("all");
   const [isDragging, setIsDragging] = useState(false);
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    fetchMedia();
+  }, []);
+
+  const fetchMedia = async () => {
+    try {
+      const response = await fetch("http://localhost:3002/media");
+      if (response.ok) {
+        const data = await response.json();
+        setFiles(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch media");
+    }
+  };
+
   const filtered = files.filter(f =>
-    f.name.toLowerCase().includes(search.toLowerCase()) &&
-    (filter === "all" || f.type === filter)
+    f.filename.toLowerCase().includes(search.toLowerCase()) &&
+    (filter === "all" || (filter === "image" ? f.mimetype.startsWith("image") : !f.mimetype.startsWith("image")))
   );
 
   const toggleSelect = (id: number) => {
     setSelected(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
-  const deleteSelected = () => {
-    setFiles(prev => prev.filter(f => !selected.includes(f.id)));
-    setSelected([]);
+  const deleteSelected = async () => {
+    if (!confirm(`Bạn có chắc muốn xóa ${selected.length} mục?`)) return;
+
+    try {
+      setLoading(true);
+      await Promise.all(
+        selected.map(id => fetch(`http://localhost:3002/media/${id}`, { method: 'DELETE' }))
+      );
+      setFiles(prev => prev.filter(f => !selected.includes(f.id)));
+      setSelected([]);
+    } catch (err) {
+      console.error("Failed to delete media");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleFiles = (fileList: FileList) => {
-    const uploaded = Array.from(fileList).map((f, i) => ({
-      id: Date.now() + i,
-      name: f.name,
-      size: `${(f.size / 1024 / 1024).toFixed(1)} MB`,
-      type: f.type.startsWith("image") ? "image" as const : "file" as const,
-      url: f.type.startsWith("image") ? URL.createObjectURL(f) : "#",
-      date: new Date().toISOString().split("T")[0],
-    }));
-    setFiles(prev => [...uploaded, ...prev]);
+  const handleFiles = async (fileList: FileList) => {
+    setLoading(true);
+    const uploadedFiles: MediaFile[] = [];
+
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await fetch("http://localhost:3002/media/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          uploadedFiles.push(data);
+        }
+      } catch (err) {
+        console.error(`Failed to upload ${file.name}`);
+      }
+    }
+
+    setFiles(prev => [...uploadedFiles, ...prev]);
+    setLoading(false);
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -66,6 +102,18 @@ export default function MediaManagerPage() {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) handleFiles(e.target.files);
+  };
+
+  const formatSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('vi-VN');
   };
 
   return (
@@ -95,20 +143,20 @@ export default function MediaManagerPage() {
             <h6 className="fw-bold mb-3 d-flex align-items-center gap-2"><Filter size={16} /> Bộ lọc</h6>
             <div className="list-group list-group-flush border-0">
               <button className={`list-group-item list-group-item-action border-0 rounded-3 mb-1 px-3 py-2 fw-medium text-sm ${filter === "all" ? "bg-primary bg-opacity-10 text-primary fw-bold" : "text-secondary"}`} onClick={() => setFilter("all")}>Tất cả file <span className="badge badge-soft-primary float-end">{files.length}</span></button>
-              <button className={`list-group-item list-group-item-action border-0 rounded-3 mb-1 px-3 py-2 fw-medium text-sm ${filter === "image" ? "bg-primary bg-opacity-10 text-primary fw-bold" : "text-secondary"}`} onClick={() => setFilter("image")}>Hình ảnh <span className="badge badge-soft-primary float-end">{files.filter(f => f.type === "image").length}</span></button>
-              <button className={`list-group-item list-group-item-action border-0 rounded-3 mb-1 px-3 py-2 fw-medium text-sm ${filter === "file" ? "bg-primary bg-opacity-10 text-primary fw-bold" : "text-secondary"}`} onClick={() => setFilter("file")}>Tài liệu <span className="badge badge-soft-primary float-end">{files.filter(f => f.type === "file").length}</span></button>
+              <button className={`list-group-item list-group-item-action border-0 rounded-3 mb-1 px-3 py-2 fw-medium text-sm ${filter === "image" ? "bg-primary bg-opacity-10 text-primary fw-bold" : "text-secondary"}`} onClick={() => setFilter("image")}>Hình ảnh <span className="badge badge-soft-primary float-end">{files.filter(f => f.mimetype.startsWith("image")).length}</span></button>
+              <button className={`list-group-item list-group-item-action border-0 rounded-3 mb-1 px-3 py-2 fw-medium text-sm ${filter === "file" ? "bg-primary bg-opacity-10 text-primary fw-bold" : "text-secondary"}`} onClick={() => setFilter("file")}>Tài liệu <span className="badge badge-soft-primary float-end">{files.filter(f => !f.mimetype.startsWith("image")).length}</span></button>
             </div>
 
             <hr className="my-4 opacity-5" />
 
             <h6 className="fw-bold mb-3 d-flex align-items-center gap-2"><Upload size={16} /> Tải lên</h6>
             <div
-              className={`upload-zone p-4 rounded-4 border-2 border-dashed text-center transition-all ${isDragging ? "border-primary bg-primary bg-opacity-10" : "border-secondary border-opacity-25"}`}
-              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              className={`upload-zone p-4 rounded-4 border-2 border-dashed text-center transition-all ${isDragging ? "border-primary bg-primary bg-opacity-10" : "border-secondary border-opacity-25"} ${loading ? "opacity-50" : ""}`}
+              onDragOver={(e) => { e.preventDefault(); !loading && setIsDragging(true); }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              style={{ cursor: "pointer" }}
+              onClick={() => !loading && fileInputRef.current?.click()}
+              style={{ cursor: loading ? "not-allowed" : "pointer" }}
             >
               <input 
                 type="file" 
@@ -117,11 +165,12 @@ export default function MediaManagerPage() {
                 ref={fileInputRef} 
                 onChange={handleFileSelect} 
                 accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+                disabled={loading}
               />
               <div className="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex p-3 mb-2 shadow-sm">
-                <Upload size={24} />
+                {loading ? <span className="spinner-border spinner-border-sm"></span> : <Upload size={24} />}
               </div>
-              <p className="small text-muted mb-0 fw-medium">Kéo thả file vào đây hoặc click để chọn</p>
+              <p className="small text-muted mb-0 fw-medium">{loading ? "Đang xử lý..." : "Kéo thả file vào đây hoặc click để chọn"}</p>
             </div>
           </div>
         </div>
@@ -143,22 +192,22 @@ export default function MediaManagerPage() {
                         <input type="checkbox" className="form-check-input shadow-sm" checked={selected.includes(file.id)} onChange={() => toggleSelect(file.id)} />
                       </div>
                       <div className="aspect-ratio-box bg-light d-flex align-items-center justify-content-center overflow-hidden position-relative" style={{ height: 140 }}>
-                        {file.type === "image" ? (
-                          <img src={file.url} className="w-100 h-100 object-fit-cover transition-all" alt={file.name} />
+                        {file.mimetype.startsWith("image") ? (
+                          <img src={file.url} className="w-100 h-100 object-fit-cover transition-all" alt={file.filename} />
                         ) : (
                           <div className="text-primary opacity-50"><Upload size={48} /></div>
                         )}
                         <div className="hover-overlay position-absolute inset-0 bg-dark bg-opacity-40 d-flex align-items-center justify-content-center opacity-0 transition-all">
-                          <button className="btn btn-light btn-sm rounded-pill px-3 fw-bold" onClick={() => file.type === "image" && setLightbox(file.url)}>
+                          <button className="btn btn-light btn-sm rounded-pill px-3 fw-bold" onClick={() => file.mimetype.startsWith("image") && setLightbox(file.url)}>
                             <Eye size={14} className="me-1" /> Xem
                           </button>
                         </div>
                       </div>
                       <div className="p-3">
-                        <div className="fw-bold text-sm text-truncate mb-1">{file.name}</div>
+                        <div className="fw-bold text-sm text-truncate mb-1">{file.filename}</div>
                         <div className="text-muted text-xs d-flex justify-content-between">
-                          <span>{file.size}</span>
-                          <span className="fw-medium">{file.date}</span>
+                          <span>{formatSize(file.size)}</span>
+                          <span className="fw-medium">{formatDate(file.createdAt)}</span>
                         </div>
                       </div>
                     </div>
@@ -184,15 +233,15 @@ export default function MediaManagerPage() {
                         <td>
                           <div className="d-flex align-items-center gap-3">
                             <div className="rounded-3 bg-light d-flex align-items-center justify-content-center overflow-hidden shadow-sm" style={{ width: 40, height: 40 }}>
-                              {file.type === "image" ? <img src={file.url} className="w-100 h-100 object-fit-cover" alt="" /> : <Upload size={16} className="text-muted" />}
+                              {file.mimetype.startsWith("image") ? <img src={file.url} className="w-100 h-100 object-fit-cover" alt="" /> : <Upload size={16} className="text-muted" />}
                             </div>
-                            <span className="fw-bold text-sm">{file.name}</span>
+                            <span className="fw-bold text-sm">{file.filename}</span>
                           </div>
                         </td>
-                        <td className="text-secondary text-sm">{file.size}</td>
-                        <td className="text-secondary text-sm">{file.date}</td>
+                        <td className="text-secondary text-sm">{formatSize(file.size)}</td>
+                        <td className="text-secondary text-sm">{formatDate(file.createdAt)}</td>
                         <td>
-                          <button className="btn btn-sm btn-light border-0 text-primary" onClick={() => file.type === "image" && setLightbox(file.url)}><Eye size={16} /></button>
+                          <button className="btn btn-sm btn-light border-0 text-primary" onClick={() => file.mimetype.startsWith("image") && setLightbox(file.url)}><Eye size={16} /></button>
                         </td>
                       </tr>
                     ))}

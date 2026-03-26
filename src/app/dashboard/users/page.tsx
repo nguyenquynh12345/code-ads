@@ -1,43 +1,30 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useToast } from "@/components/ToastProvider";
 
 interface User {
   id: number;
-  name: string;
+  fullName: string;
+  username: string;
   email: string;
   role: "Admin" | "Editor" | "User";
   status: "active" | "inactive";
-  joined: string;
+  createdAt: string;
 }
-
-const initialUsers: User[] = [
-  { id: 1, name: "Nguyễn Văn An", email: "an.nguyen@email.com", role: "Admin", status: "active", joined: "15/01/2024" },
-  { id: 2, name: "Trần Thị Bình", email: "binh.tran@email.com", role: "Editor", status: "active", joined: "22/02/2024" },
-  { id: 3, name: "Lê Văn Cường", email: "cuong.le@email.com", role: "User", status: "inactive", joined: "05/03/2024" },
-  { id: 4, name: "Phạm Thị Dung", email: "dung.pham@email.com", role: "User", status: "active", joined: "18/03/2024" },
-  { id: 5, name: "Hoàng Văn Em", email: "em.hoang@email.com", role: "Editor", status: "active", joined: "01/04/2024" },
-  { id: 6, name: "Vũ Thị Giang", email: "giang.vu@email.com", role: "User", status: "inactive", joined: "10/04/2024" },
-  { id: 7, name: "Đặng Văn Hùng", email: "hung.dang@email.com", role: "User", status: "active", joined: "20/04/2024" },
-  { id: 8, name: "Bùi Thị Kim", email: "kim.bui@email.com", role: "Editor", status: "active", joined: "03/05/2024" },
-  { id: 9, name: "Đỗ Văn Long", email: "long.do@email.com", role: "User", status: "inactive", joined: "14/05/2024" },
-  { id: 10, name: "Ngô Thị Mai", email: "mai.ngo@email.com", role: "User", status: "active", joined: "25/05/2024" },
-  { id: 11, name: "Phan Văn Nam", email: "nam.phan@email.com", role: "User", status: "active", joined: "01/06/2024" },
-  { id: 12, name: "Lý Thị Oanh", email: "oanh.ly@email.com", role: "Admin", status: "active", joined: "10/06/2024" },
-];
 
 const PAGE_SIZE = 5;
 
-const emptyForm = { name: "", email: "", role: "User" as User["role"], status: "active" as User["status"] };
+const emptyForm = { fullName: "", username: "", email: "", role: "User" as User["role"], status: "active" as User["status"] };
 
 export default function UsersPage() {
   const { showToast } = useToast();
-  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
 
   // Add Modal
   const [showAddModal, setShowAddModal] = useState(false);
@@ -50,11 +37,30 @@ export default function UsersPage() {
   // Delete Confirm
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
 
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("http://localhost:3002/users");
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data);
+      }
+    } catch (err) {
+      showToast("Không thể tải danh sách người dùng", "danger");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filtered = useMemo(() => {
     return users.filter((u) => {
-      const matchSearch =
-        u.name.toLowerCase().includes(search.toLowerCase()) ||
-        u.email.toLowerCase().includes(search.toLowerCase());
+      const name = (u.fullName || u.username || "").toLowerCase();
+      const s = search.toLowerCase();
+      const matchSearch = name.includes(s) || (u.email && u.email.toLowerCase().includes(s));
       const matchRole = !roleFilter || u.role === roleFilter;
       const matchStatus = !statusFilter || u.status === statusFilter;
       return matchSearch && matchRole && matchStatus;
@@ -71,46 +77,93 @@ export default function UsersPage() {
   };
 
   // Add
-  const handleAdd = () => {
-    if (!addForm.name.trim() || !addForm.email.trim()) return;
-    const newUser: User = {
-      id: Date.now(),
-      ...addForm,
-      joined: new Date().toLocaleDateString("vi-VN"),
-    };
-    setUsers([newUser, ...users]);
-    setShowAddModal(false);
-    setAddForm({ ...emptyForm });
-    showToast("Đã thêm người dùng thành công", "success");
+  const handleAdd = async () => {
+    if (!addForm.fullName.trim() || !addForm.email.trim()) return;
+    try {
+      const response = await fetch("http://localhost:3002/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...addForm,
+          username: addForm.fullName.toLowerCase().replace(/\s+/g, '.'),
+        }),
+      });
+      if (response.ok) {
+        showToast("Đã thêm người dùng thành công", "success");
+        setShowAddModal(false);
+        setAddForm({ ...emptyForm });
+        fetchUsers();
+      } else {
+        showToast("Lỗi khi thêm người dùng", "danger");
+      }
+    } catch (err) {
+      showToast("Lỗi kết nối máy chủ", "danger");
+    }
   };
 
   // Edit
   const openEdit = (u: User) => {
     setEditUser(u);
-    setEditForm({ name: u.name, email: u.email, role: u.role, status: u.status });
+    setEditForm({ 
+      fullName: u.fullName || u.username || "", 
+      username: u.username || "",
+      email: u.email || "", 
+      role: u.role, 
+      status: u.status 
+    });
   };
-  const handleEdit = () => {
-    if (!editForm.name.trim() || !editForm.email.trim() || !editUser) return;
-    setUsers(users.map((u) => (u.id === editUser.id ? { ...u, ...editForm } : u)));
-    setEditUser(null);
-    showToast("Đã cập nhật người dùng", "success");
+
+  const handleEdit = async () => {
+    if (!editForm.fullName.trim() || !editForm.email.trim() || !editUser) return;
+    try {
+      const response = await fetch(`http://localhost:3002/users/${editUser.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editForm),
+      });
+      if (response.ok) {
+        showToast("Đã cập nhật người dùng", "success");
+        setEditUser(null);
+        fetchUsers();
+      } else {
+        showToast("Lỗi khi cập nhật", "danger");
+      }
+    } catch (err) {
+      showToast("Lỗi kết nối máy chủ", "danger");
+    }
   };
 
   // Delete
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteTarget) return;
-    setUsers(users.filter((u) => u.id !== deleteTarget.id));
-    setDeleteTarget(null);
-    showToast("Đã xóa người dùng", "success");
-    if (paginated.length === 1 && currentPage > 1) setPage(currentPage - 1);
+    try {
+      const response = await fetch(`http://localhost:3002/users/${deleteTarget.id}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        showToast("Đã xóa người dùng", "success");
+        setDeleteTarget(null);
+        fetchUsers();
+        if (paginated.length === 1 && currentPage > 1) setPage(currentPage - 1);
+      } else {
+        showToast("Lỗi khi xóa người dùng", "danger");
+      }
+    } catch (err) {
+      showToast("Lỗi kết nối máy chủ", "danger");
+    }
   };
 
-  const roleBadge = (role: User["role"]) =>
+  const roleBadge = (role: string) =>
     role === "Admin"
       ? "badge-soft-danger"
       : role === "Editor"
       ? "badge-soft-primary"
       : "badge-soft-info";
+
+  const formatDate = (date: string) => {
+    if (!date) return "N/A";
+    return new Date(date).toLocaleDateString("vi-VN");
+  };
 
   return (
     <>
@@ -127,7 +180,6 @@ export default function UsersPage() {
 
       <div className="card content-card">
         <div className="card-body p-4">
-          {/* Search & Filter */}
           <div className="row g-2 mb-4">
             <div className="col-md-5">
               <div className="input-group">
@@ -160,7 +212,6 @@ export default function UsersPage() {
             </div>
           </div>
 
-          {/* Table */}
           <div className="table-responsive">
             <table className="table table-hover align-middle border-top">
               <thead className="table-light">
@@ -174,7 +225,14 @@ export default function UsersPage() {
                 </tr>
               </thead>
               <tbody className="border-top-0">
-                {paginated.length === 0 ? (
+                {loading ? (
+                    <tr>
+                      <td colSpan={6} className="text-center py-5">
+                        <div className="spinner-border spinner-border-sm text-primary me-2"></div>
+                        Đang tải...
+                      </td>
+                    </tr>
+                ) : paginated.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="text-center py-5 text-muted">
                       <i className="bi bi-person-x fs-2 d-block mb-2" />
@@ -187,16 +245,16 @@ export default function UsersPage() {
                       <td className="px-3">
                         <div className="d-flex align-items-center gap-3">
                           <img
-                            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&size=40&background=6366f1&color=fff&bold=true`}
-                            alt={user.name}
+                            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || user.username || "User")}&size=40&background=6366f1&color=fff&bold=true`}
+                            alt={user.fullName || user.username}
                             className="rounded-circle shadow-sm"
                             width={40}
                             height={40}
                           />
-                          <span className="fw-bold text-sm">{user.name}</span>
+                          <span className="fw-bold text-sm">{user.fullName || user.username}</span>
                         </div>
                       </td>
-                      <td className="text-secondary text-sm">{user.email}</td>
+                      <td className="text-secondary text-sm">{user.email || "N/A"}</td>
                       <td>
                         <span className={`badge rounded-pill ${roleBadge(user.role)} px-3 py-1 font-monospace`} style={{ fontSize: "0.7rem" }}>
                           {user.role}
@@ -213,7 +271,7 @@ export default function UsersPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="text-secondary text-xs fw-medium">{user.joined}</td>
+                      <td className="text-secondary text-xs fw-medium">{formatDate(user.createdAt)}</td>
                       <td>
                         <div className="d-flex gap-2">
                           <button
@@ -239,7 +297,6 @@ export default function UsersPage() {
             </table>
           </div>
 
-          {/* Pagination */}
           <div className="d-flex align-items-center justify-content-between pt-4 pb-2 border-top">
             <small className="text-muted text-xs fw-bold text-uppercase">
               Hiển thị {paginated.length > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0}–
@@ -264,7 +321,6 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {/* ─── Modal Thêm ─── */}
       {showAddModal && (
         <div className="modal d-block" style={{ background: "rgba(0,0,0,0.5)" }} onClick={(e) => e.target === e.currentTarget && setShowAddModal(false)}>
           <div className="modal-dialog modal-dialog-centered">
@@ -280,8 +336,8 @@ export default function UsersPage() {
                     type="text"
                     className="form-control"
                     placeholder="Nhập họ tên"
-                    value={addForm.name}
-                    onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
+                    value={addForm.fullName}
+                    onChange={(e) => setAddForm({ ...addForm, fullName: e.target.value })}
                   />
                 </div>
                 <div className="mb-3">
@@ -314,7 +370,7 @@ export default function UsersPage() {
               </div>
               <div className="modal-footer border-0 pt-0">
                 <button className="btn btn-light" onClick={() => setShowAddModal(false)}>Hủy</button>
-                <button className="btn btn-primary px-4" onClick={handleAdd} disabled={!addForm.name.trim() || !addForm.email.trim()}>
+                <button className="btn btn-primary px-4" onClick={handleAdd} disabled={!addForm.fullName.trim() || !addForm.email.trim()}>
                   Tạo người dùng
                 </button>
               </div>
@@ -323,7 +379,6 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* ─── Modal Sửa ─── */}
       {editUser && (
         <div className="modal d-block" style={{ background: "rgba(0,0,0,0.5)" }} onClick={(e) => e.target === e.currentTarget && setEditUser(null)}>
           <div className="modal-dialog modal-dialog-centered">
@@ -335,18 +390,18 @@ export default function UsersPage() {
               <div className="modal-body">
                 <div className="d-flex align-items-center gap-3 mb-4 p-3 bg-light rounded-3">
                   <img
-                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(editUser.name)}&size=48&background=6366f1&color=fff`}
+                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(editUser.fullName || editUser.username || "User")}&size=48&background=6366f1&color=fff`}
                     className="rounded-circle"
                     width={48} height={48} alt=""
                   />
                   <div>
-                    <div className="fw-bold">{editUser.name}</div>
+                    <div className="fw-bold">{editUser.fullName || editUser.username}</div>
                     <div className="text-muted small">ID: #{editUser.id}</div>
                   </div>
                 </div>
                 <div className="mb-3">
                   <label className="form-label small fw-medium">Họ và tên</label>
-                  <input type="text" className="form-control" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+                  <input type="text" className="form-control" value={editForm.fullName} onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })} />
                 </div>
                 <div className="mb-3">
                   <label className="form-label small fw-medium">Email</label>
@@ -379,7 +434,6 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* ─── Confirm Delete ─── */}
       {deleteTarget && (
         <div className="modal d-block" style={{ background: "rgba(0,0,0,0.5)" }} onClick={(e) => e.target === e.currentTarget && setDeleteTarget(null)}>
           <div className="modal-dialog modal-dialog-centered modal-sm">
@@ -391,7 +445,7 @@ export default function UsersPage() {
                 </div>
                 <h6 className="fw-bold mb-1">Xóa người dùng?</h6>
                 <p className="text-muted small mb-4">
-                  Bạn có chắc muốn xóa <strong>{deleteTarget.name}</strong>?<br />Hành động này không thể hoàn tác.
+                  Bạn có chắc muốn xóa <strong>{deleteTarget.fullName || deleteTarget.username}</strong>?<br />Hành động này không thể hoàn tác.
                 </p>
                 <div className="d-flex gap-2 justify-content-center">
                   <button className="btn btn-light px-4" onClick={() => setDeleteTarget(null)}>Hủy</button>

@@ -2,11 +2,39 @@
 
 import Link from "next/link";
 
+import { useState, useEffect } from "react";
 import { useTheme } from "./ThemeProvider";
 import { Sun, Moon } from "lucide-react";
 
+interface UserProfile {
+  id: number;
+  fullName: string;
+  avatarUrl: string;
+}
+
 export default function Topbar({ title }: { title?: string }) {
   const { theme, toggleTheme } = useTheme();
+  const [user, setUser] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      fetchProfile(parsedUser.id);
+    }
+  }, []);
+
+  const fetchProfile = async (id: number) => {
+    try {
+      const response = await fetch(`http://localhost:3002/auth/profile/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch profile");
+    }
+  };
   
   const toggleSidebar = () => {
     const sidebar = document.getElementById("sidebar");
@@ -66,13 +94,16 @@ export default function Topbar({ title }: { title?: string }) {
             data-bs-toggle="dropdown"
           >
             <img
-              src="https://ui-avatars.com/api/?name=Admin+User&background=6366f1&color=fff&size=32"
+              src={user?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullName || "Admin")}&background=6366f1&color=fff&size=32`}
               alt="avatar"
               className="rounded-circle"
               width={28}
               height={28}
+              style={{ objectFit: 'cover' }}
             />
-            <span className="d-none d-sm-inline text-dark-emphasis small fw-medium">Admin</span>
+            <span className="d-none d-sm-inline text-dark-emphasis small fw-medium">
+              {user?.fullName || "Loading..."}
+            </span>
             <i className="bi bi-chevron-down small text-muted" />
           </button>
           <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-1">

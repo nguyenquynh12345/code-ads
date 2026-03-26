@@ -1,6 +1,45 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function LoginPage() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("http://localhost:3002/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("access_token", data.access_token);
+        router.push("/dashboard");
+      } else {
+        setError(data.message || "Đăng nhập thất bại");
+      }
+    } catch (err) {
+      setError("Không thể kết nối đến server");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="auth-bg d-flex align-items-center justify-content-center p-3">
       <div className="w-100" style={{ maxWidth: 440 }}>
@@ -15,17 +54,22 @@ export default function LoginPage() {
         </div>
 
         <div className="card auth-card p-4">
-          <form>
+          <form onSubmit={handleLogin}>
+            {error && <div className="alert alert-danger py-2 small mb-3">{error}</div>}
+            
             <div className="mb-3">
-              <label className="form-label small fw-medium">Email</label>
+              <label className="form-label small fw-medium">Tên đăng nhập</label>
               <div className="input-group">
                 <span className="input-group-text bg-light border-end-0">
-                  <i className="bi bi-envelope text-muted" />
+                  <i className="bi bi-person text-muted" />
                 </span>
                 <input
-                  type="email"
+                  type="text"
                   className="form-control border-start-0 bg-light"
-                  placeholder="email@example.com"
+                  placeholder="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -43,6 +87,9 @@ export default function LoginPage() {
                   type="password"
                   className="form-control border-start-0 bg-light"
                   placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -54,10 +101,18 @@ export default function LoginPage() {
               </label>
             </div>
 
-            <Link href="/dashboard" className="btn btn-primary w-100 py-2 fw-medium">
-              <i className="bi bi-box-arrow-in-right me-2" />
-              Đăng nhập
-            </Link>
+            <button 
+              type="submit" 
+              className="btn btn-primary w-100 py-2 fw-medium"
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              ) : (
+                <i className="bi bi-box-arrow-in-right me-2" />
+              )}
+              {loading ? "Đang xử lý..." : "Đăng nhập"}
+            </button>
 
             <div className="text-center my-3">
               <span className="text-muted small">hoặc đăng nhập với</span>

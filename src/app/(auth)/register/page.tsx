@@ -1,6 +1,50 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function RegisterPage() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      setError("Mật khẩu xác nhận không khớp");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("http://localhost:3002/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        router.push("/login?registered=true");
+      } else {
+        setError(data.message || "Đăng ký thất bại");
+      }
+    } catch (err) {
+      setError("Không thể kết nối đến server");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="auth-bg d-flex align-items-center justify-content-center p-3">
       <div className="w-100" style={{ maxWidth: 480 }}>
@@ -14,23 +58,24 @@ export default function RegisterPage() {
         </div>
 
         <div className="card auth-card p-4">
-          <form>
+          <form onSubmit={handleRegister}>
+            {error && <div className="alert alert-danger py-2 small mb-3">{error}</div>}
+            
             <div className="row g-3">
-              <div className="col-md-6">
-                <label className="form-label small fw-medium">Họ</label>
-                <input type="text" className="form-control bg-light" placeholder="Nguyễn" />
-              </div>
-              <div className="col-md-6">
-                <label className="form-label small fw-medium">Tên</label>
-                <input type="text" className="form-control bg-light" placeholder="Văn A" />
-              </div>
               <div className="col-12">
-                <label className="form-label small fw-medium">Email</label>
+                <label className="form-label small fw-medium">Tên đăng nhập</label>
                 <div className="input-group">
                   <span className="input-group-text bg-light border-end-0">
-                    <i className="bi bi-envelope text-muted" />
+                    <i className="bi bi-person text-muted" />
                   </span>
-                  <input type="email" className="form-control border-start-0 bg-light" placeholder="email@example.com" />
+                  <input 
+                    type="text" 
+                    className="form-control border-start-0 bg-light" 
+                    placeholder="Username" 
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                  />
                 </div>
               </div>
               <div className="col-12">
@@ -39,7 +84,14 @@ export default function RegisterPage() {
                   <span className="input-group-text bg-light border-end-0">
                     <i className="bi bi-lock text-muted" />
                   </span>
-                  <input type="password" className="form-control border-start-0 bg-light" placeholder="Ít nhất 8 ký tự" />
+                  <input 
+                    type="password" 
+                    className="form-control border-start-0 bg-light" 
+                    placeholder="Ít nhất 8 ký tự" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
                 </div>
               </div>
               <div className="col-12">
@@ -48,12 +100,19 @@ export default function RegisterPage() {
                   <span className="input-group-text bg-light border-end-0">
                     <i className="bi bi-lock-fill text-muted" />
                   </span>
-                  <input type="password" className="form-control border-start-0 bg-light" placeholder="Nhập lại mật khẩu" />
+                  <input 
+                    type="password" 
+                    className="form-control border-start-0 bg-light" 
+                    placeholder="Nhập lại mật khẩu" 
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
                 </div>
               </div>
               <div className="col-12">
                 <div className="form-check">
-                  <input className="form-check-input" type="checkbox" id="terms" />
+                  <input className="form-check-input" type="checkbox" id="terms" required />
                   <label className="form-check-label small text-muted" htmlFor="terms">
                     Tôi đồng ý với{" "}
                     <a href="#" className="text-primary text-decoration-none">Điều khoản dịch vụ</a>
@@ -63,10 +122,18 @@ export default function RegisterPage() {
                 </div>
               </div>
               <div className="col-12">
-                <Link href="/dashboard" className="btn btn-primary w-100 py-2 fw-medium">
-                  <i className="bi bi-person-plus me-2" />
-                  Tạo tài khoản
-                </Link>
+                <button 
+                  type="submit" 
+                  className="btn btn-primary w-100 py-2 fw-medium"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  ) : (
+                    <i className="bi bi-person-plus me-2" />
+                  )}
+                  {loading ? "Đang xử lý..." : "Tạo tài khoản"}
+                </button>
               </div>
             </div>
           </form>
