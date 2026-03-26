@@ -8,9 +8,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import Skeleton from "@/components/Skeleton";
 import MiniCalendar from "@/components/MiniCalendar";
-import { X } from "lucide-react";
-
+import { X, Activity } from "lucide-react";
+import AIDataAssistant from "@/components/AIDataAssistant";
+import LivePulseFeed from "@/components/LivePulseFeed";
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
+
 
 // Sparkline data per stat card
 const sparkData = [
@@ -241,6 +243,14 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ))}
+              <hr className="my-4 opacity-5" />
+              <div className="d-flex align-items-center gap-2 mb-3 px-2">
+                <div className="bg-primary bg-opacity-10 p-1 rounded-2 text-primary">
+                  <Activity size={14} />
+                </div>
+                <h6 className="fw-bold text-xs text-uppercase text-muted mb-0">Hoạt động trực tiếp</h6>
+              </div>
+              <LivePulseFeed />
             </div>
           </div>
         </motion.div>
@@ -310,6 +320,7 @@ export default function DashboardPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      <AIDataAssistant />
     </motion.div>
   );
 }
