@@ -1,87 +1,148 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useToast } from "@/components/ToastProvider";
+import MediaPickerModal from "@/components/MediaPickerModal";
+import { fetchWithAuth } from "@/lib/api";
+
+interface Profile {
+  id: number;
+  username: string;
+  fullName: string;
+  email: string;
+  avatarUrl: string;
+  avatarThumbnailUrl?: string;
+  role: string;
+  phone?: string;
+  bio?: string;
+  language?: string;
+}
 
 export default function ProfilePage() {
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState("info");
-  const [profile, setProfile] = useState({
-    id: 1, // Defaulting to 1 for verification
+  const [profile, setProfile] = useState<Profile>({
+    id: 0,
     username: "",
     fullName: "",
     email: "",
     avatarUrl: "",
+    role: "User",
+    phone: "",
+    bio: "",
+    language: "vi",
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetchProfile();
+    // Read user id from localStorage (saved at login)
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      const parsed = JSON.parse(stored) as Profile;
+      setProfile(parsed);
+      fetchProfile(parsed.id);
+    } else {
+      setLoading(false);
+    }
   }, []);
 
-  const fetchProfile = async () => {
-    try {
-      const response = await fetch(`http://localhost:3002/auth/profile/${profile.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setProfile((prev) => ({ ...prev, ...data }));
-      }
-    } catch (err) {
-      console.error("Failed to fetch profile");
-    }
-  };
-
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("file", file);
-
+  const fetchProfile = async (id: number) => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:3002/media/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setProfile((prev) => ({ ...prev, avatarUrl: data.url }));
-        setSuccess("Ảnh đại diện đã được tải lên!");
+      const res = await fetchWithAuth(`http://localhost:3002/auth/profile/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setProfile(data);
+        // Keep localStorage in sync
+        localStorage.setItem("user", JSON.stringify(data));
       }
-    } catch (err) {
-      setError("Không thể tải ảnh lên");
+    } catch {
+      showToast("Không thể tải hồ sơ", "danger");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setSuccess("");
-
+  // ── Avatar selected from picker ──────────────────────────────────────────
+  const handleAvatarSelect = async (url: string, thumbnailUrl?: string) => {
     try {
-      const response = await fetch("http://localhost:3002/auth/profile", {
+      setUploading(true);
+      const updated = { ...profile, avatarUrl: url, avatarThumbnailUrl: thumbnailUrl };
+      
+      // Explicitly send only necessary fields to prevent DB write rejection of readonly columns
+      const payload = { id: profile.id, avatarUrl: url, avatarThumbnailUrl: thumbnailUrl };
+      
+      const res = await fetchWithAuth("http://localhost:3002/auth/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(profile),
+        body: JSON.stringify(payload),
       });
-
-      if (response.ok) {
-        setSuccess("Cập nhật hồ sơ thành công!");
+      if (res.ok) {
+        setProfile(updated);
+        localStorage.setItem("user", JSON.stringify(updated));
+        window.dispatchEvent(new Event("userUpdated"));
+        showToast("Ảnh đại diện đã được cập nhật!", "success");
       } else {
-        setError("Cập nhật thất bại");
+        showToast("Cập nhật ảnh thất bại", "danger");
       }
-    } catch (err) {
-      setError("Lỗi kết nối server");
+    } catch {
+      showToast("Lỗi kết nối máy chủ", "danger");
     } finally {
-      setLoading(false);
+      setUploading(false);
     }
   };
+
+  // (upload flow now handled inside MediaPickerModal)
+
+  // ── Save info ─────────────────────────────────────────────────────────────
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSaving(true);
+      
+      // Explicitly send editable fields
+      const payload = {
+        id: profile.id,
+        fullName: profile.fullName,
+        email: profile.email,
+        phone: profile.phone,
+        bio: profile.bio,
+        language: profile.language,
+      };
+
+      const res = await fetchWithAuth("http://localhost:3002/auth/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        // Keep localStorage in sync
+        localStorage.setItem("user", JSON.stringify(profile));
+        // Notify Topbar (same-tab)
+        window.dispatchEvent(new Event("userUpdated"));
+        showToast("Cập nhật hồ sơ thành công!", "success");
+      } else {
+        showToast("Cập nhật thất bại", "danger");
+      }
+    } catch {
+      showToast("Lỗi kết nối server", "danger");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-5 text-muted">
+        <div className="spinner-border spinner-border-sm text-primary me-2" />
+        Đang tải hồ sơ...
+      </div>
+    );
+  }
 
   return (
     <>
@@ -90,47 +151,45 @@ export default function ProfilePage() {
         <p className="text-muted small mb-0">Quản lý thông tin tài khoản của bạn</p>
       </div>
 
-      {error && <div className="alert alert-danger py-2 small mb-3">{error}</div>}
-      {success && <div className="alert alert-success py-2 small mb-3">{success}</div>}
-
       <div className="row g-4">
         {/* Profile Card */}
         <div className="col-lg-4">
           <div className="card content-card text-center p-4">
             <div className="position-relative d-inline-block mx-auto mb-3">
               <img
-                src={profile.avatarUrl || `https://ui-avatars.com/api/?name=${profile.fullName || profile.username || 'User'}&size=100&background=6366f1&color=fff`}
+                src={
+                  profile.avatarThumbnailUrl ||
+                  profile.avatarUrl ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    profile.fullName || profile.username || "User"
+                  )}&size=100&background=6366f1&color=fff`
+                }
                 alt="avatar"
                 className="rounded-circle border"
-                style={{ objectFit: 'cover' }}
-                width={100}
-                height={100}
-              />
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                className="d-none" 
-                onChange={handleAvatarChange}
-                accept="image/*"
+                style={{ objectFit: "cover", width: 100, height: 100 }}
               />
               <button
-                className="btn btn-sm btn-primary rounded-circle position-absolute bottom-0 end-0"
-                style={{ width: 28, height: 28, padding: 0 }}
-                onClick={() => fileInputRef.current?.click()}
-                disabled={loading}
+                className="btn btn-sm btn-primary rounded-circle position-absolute bottom-0 end-0 d-flex align-items-center justify-content-center"
+                style={{ width: 32, height: 32, padding: 0 }}
+                onClick={() => setShowPicker(true)}
+                disabled={uploading}
+                title="Chọn hoặc tải lên ảnh đại diện"
               >
-                {loading ? (
-                  <span className="spinner-border spinner-border-sm" role="status"></span>
+                {uploading ? (
+                  <span className="spinner-border spinner-border-sm" style={{ width: 14, height: 14 }} />
                 ) : (
-                  <i className="bi bi-camera-fill" style={{ fontSize: "0.7rem" }} />
+                  <i className="bi bi-camera-fill" style={{ fontSize: "0.75rem" }} />
                 )}
               </button>
             </div>
             <h5 className="fw-bold mb-1">{profile.fullName || profile.username || "Người dùng"}</h5>
             <p className="text-muted small mb-3">{profile.email || "Chưa cập nhật email"}</p>
-            <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-1 mb-4">
-              Administrator
+            <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-1 mb-2">
+              {profile.role || "User"}
             </span>
+            <p className="text-muted" style={{ fontSize: "0.72rem" }}>
+              <i className="bi bi-person-badge me-1" />@{profile.username}
+            </p>
           </div>
         </div>
 
@@ -161,28 +220,71 @@ export default function ProfilePage() {
                   <div className="row g-3">
                     <div className="col-md-12">
                       <label className="form-label small fw-medium">Họ và tên</label>
-                      <input 
-                        className="form-control" 
-                        value={profile.fullName} 
-                        onChange={(e) => setProfile(prev => ({ ...prev, fullName: e.target.value }))}
+                      <input
+                        className="form-control"
+                        value={profile.fullName}
+                        onChange={(e) => setProfile((p) => ({ ...p, fullName: e.target.value }))}
                         placeholder="Nguyễn Văn A"
                       />
                     </div>
                     <div className="col-md-12">
                       <label className="form-label small fw-medium">Email</label>
-                      <input 
-                        className="form-control" 
-                        value={profile.email} 
-                        onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
+                      <input
+                        className="form-control"
+                        type="email"
+                        value={profile.email}
+                        onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))}
                         placeholder="admin@myapp.com"
                       />
                     </div>
-                    <div className="col-md-12 text-muted small">
-                      <i className="bi bi-info-circle me-1"></i> Tên đăng nhập: <strong>{profile.username}</strong>
+                    <div className="col-md-6">
+                      <label className="form-label small fw-medium">Số điện thoại</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        value={profile.phone || ""}
+                        onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))}
+                        placeholder="0912345678"
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label small fw-medium">Ngôn ngữ</label>
+                      <select 
+                        className="form-select" 
+                        value={profile.language || "vi"} 
+                        onChange={(e) => setProfile((p) => ({ ...p, language: e.target.value }))}
+                      >
+                        <option value="vi">Tiếng Việt</option>
+                        <option value="en">English (US)</option>
+                      </select>
+                    </div>
+                    <div className="col-md-12">
+                       <label className="form-label small fw-medium">Tiểu sử (Bio)</label>
+                       <textarea 
+                         className="form-control" 
+                         rows={3} 
+                         value={profile.bio || ""}
+                         onChange={(e) => setProfile((p) => ({ ...p, bio: e.target.value }))}
+                         placeholder="Một vài lời giới thiệu về bạn..."
+                       />
+                    </div>
+                    <div className="col-md-12 text-muted small mt-3">
+                      <i className="bi bi-info-circle me-1" />
+                      Tên đăng nhập: <strong>{profile.username}</strong>
                     </div>
                     <div className="col-12">
-                      <button type="submit" className="btn btn-primary px-4" disabled={loading}>
-                        {loading ? 'Đang lưu...' : <><i className="bi bi-check2 me-1" /> Lưu thay đổi</>}
+                      <button type="submit" className="btn btn-primary px-4" disabled={saving}>
+                        {saving ? (
+                          <>
+                            <span className="spinner-border spinner-border-sm me-1" />
+                            Đang lưu...
+                          </>
+                        ) : (
+                          <>
+                            <i className="bi bi-check2 me-1" />
+                            Lưu thay đổi
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -198,6 +300,14 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {showPicker && (
+        <MediaPickerModal
+          onSelect={handleAvatarSelect}
+          onClose={() => setShowPicker(false)}
+        />
+      )}
     </>
   );
 }
+

@@ -10,32 +10,38 @@ interface UserProfile {
   id: number;
   fullName: string;
   avatarUrl: string;
+  avatarThumbnailUrl?: string;
+  role: string;
 }
 
 export default function Topbar({ title }: { title?: string }) {
   const { theme, toggleTheme } = useTheme();
   const [user, setUser] = useState<UserProfile | null>(null);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      fetchProfile(parsedUser.id);
-    }
-  }, []);
-
-  const fetchProfile = async (id: number) => {
-    try {
-      const response = await fetch(`http://localhost:3002/auth/profile/${id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch profile");
+  const loadUser = () => {
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      setUser(JSON.parse(stored) as UserProfile);
     }
   };
-  
+
+  useEffect(() => {
+    loadUser();
+
+    // Re-read when other tabs or components update localStorage
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "user") loadUser();
+    };
+    // Re-read when same-tab components dispatch this custom event
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("userUpdated", loadUser);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("userUpdated", loadUser);
+    };
+  }, []);
+
+
   const toggleSidebar = () => {
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -94,7 +100,7 @@ export default function Topbar({ title }: { title?: string }) {
             data-bs-toggle="dropdown"
           >
             <img
-              src={user?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullName || "Admin")}&background=6366f1&color=fff&size=32`}
+              src={user?.avatarThumbnailUrl || user?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullName || "Admin")}&background=6366f1&color=fff&size=32`}
               alt="avatar"
               className="rounded-circle"
               width={28}
@@ -104,6 +110,11 @@ export default function Topbar({ title }: { title?: string }) {
             <span className="d-none d-sm-inline text-dark-emphasis small fw-medium">
               {user?.fullName || "Loading..."}
             </span>
+            {user?.role && (
+               <span className={`badge rounded-pill ms-1 d-none d-md-inline-block px-2 py-1 ${user.role === 'Admin' ? 'bg-danger-subtle text-danger' : user.role === 'Editor' ? 'bg-primary-subtle text-primary' : 'bg-secondary-subtle text-secondary'}`} style={{ fontSize: '10px' }}>
+                 {user.role === 'Admin' ? 'Admin' : user.role === 'Editor' ? 'Editor' : 'User'}
+               </span>
+            )}
             <i className="bi bi-chevron-down small text-muted" />
           </button>
           <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-1">

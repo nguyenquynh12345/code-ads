@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Plus, X, StickyNote } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface Note {
   id: number;
@@ -39,55 +38,49 @@ export default function StickyNotes() {
 
   return (
     <div className="position-fixed bottom-0 end-0 m-4" style={{ zIndex: 1060 }}>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="glass-card p-3 mb-3 rounded-4 shadow-lg"
-            style={{ width: 300, maxHeight: 400, overflowY: "auto" }}
-          >
-            <div className="d-flex align-items-center justify-content-between mb-3">
-              <h6 className="fw-bold mb-0 d-flex align-items-center gap-2">
-                <StickyNote size={18} className="text-warning" /> Ghi chú nhanh
-              </h6>
-              <button className="btn btn-sm btn-light rounded-circle" onClick={() => setIsOpen(false)}>
-                <X size={14} />
-              </button>
-            </div>
-            
-            <div className="d-flex flex-column gap-2">
-              {notes.map(note => (
-                <motion.div 
-                  layout
-                  key={note.id} 
-                  className="p-2 rounded-3 shadow-sm position-relative"
-                  style={{ background: note.color, color: "#1e293b" }}
+      {isOpen && (
+        <div 
+          className="glass-card p-3 mb-3 rounded-4 shadow-lg"
+          style={{ width: 300, maxHeight: 400, overflowY: "auto" }}
+        >
+          <div className="d-flex align-items-center justify-content-between mb-3">
+            <h6 className="fw-bold mb-0 d-flex align-items-center gap-2">
+              <StickyNote size={18} className="text-warning" /> Ghi chú nhanh
+            </h6>
+            <button className="btn btn-sm btn-light rounded-circle" onClick={() => setIsOpen(false)}>
+              <X size={14} />
+            </button>
+          </div>
+          
+          <div className="d-flex flex-column gap-2">
+            {notes.map(note => (
+              <div 
+                key={note.id} 
+                className="p-2 rounded-3 shadow-sm position-relative"
+                style={{ background: note.color, color: "#1e293b" }}
+              >
+                <textarea
+                  className="form-control bg-transparent border-0 p-0 text-sm fw-medium shadow-none"
+                  rows={2}
+                  value={note.text}
+                  onChange={(e) => updateNote(note.id, e.target.value)}
+                  placeholder="Nhập ghi chú..."
+                  style={{ resize: "none" }}
+                />
+                <button 
+                  className="btn btn-sm p-0 position-absolute top-0 end-0 m-1 opacity-50 hover-opacity-100"
+                  onClick={() => deleteNote(note.id)}
                 >
-                  <textarea
-                    className="form-control bg-transparent border-0 p-0 text-sm fw-medium shadow-none"
-                    rows={2}
-                    value={note.text}
-                    onChange={(e) => updateNote(note.id, e.target.value)}
-                    placeholder="Nhập ghi chú..."
-                    style={{ resize: "none" }}
-                  />
-                  <button 
-                    className="btn btn-sm p-0 position-absolute top-0 end-0 m-1 opacity-50 hover-opacity-100"
-                    onClick={() => deleteNote(note.id)}
-                  >
-                    <X size={12} />
-                  </button>
-                </motion.div>
-              ))}
-              <button className="btn btn-sm btn-outline-primary border-dashed w-100 mt-2 py-2" onClick={addNote}>
-                <Plus size={14} className="me-1" /> Thêm ghi chú
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+            <button className="btn btn-sm btn-outline-primary border-dashed w-100 mt-2 py-2" onClick={addNote}>
+              <Plus size={14} className="me-1" /> Thêm ghi chú
+            </button>
+          </div>
+        </div>
+      )}
 
       <button
         className="btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center p-0"

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Activity, ShoppingCart, UserPlus, CreditCard, ArrowUpRight } from "lucide-react";
+import { ShoppingCart, UserPlus, CreditCard, ArrowUpRight } from "lucide-react";
 
 interface ActivityItem {
   id: string;
@@ -51,35 +50,36 @@ export default function LivePulseFeed() {
   return (
     <div className="card-body p-0">
       <div className="d-flex flex-column gap-2 px-3 pb-3">
-        <AnimatePresence initial={false}>
-          {activities.map((item) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, x: -20, height: 0 }}
-              animate={{ opacity: 1, x: 0, height: "auto" }}
-              exit={{ opacity: 0, x: 20, height: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="d-flex align-items-center gap-3 p-2 rounded-3 hover-bg-light transition-all border border-transparent hover-border-light"
-            >
-              <div className={`position-relative flex-shrink-0 bg-${item.color} bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-${item.color}`} style={{ width: 32, height: 32 }}>
-                {item.icon}
-                <span className={`position-absolute top-0 start-100 translate-middle p-1 bg-${item.color} border border-light rounded-circle shadow-sm pulse-dot`}></span>
+        {activities.map((item) => (
+          <div
+            key={item.id}
+            className="d-flex align-items-center gap-3 p-2 rounded-3 hover-bg-light transition-all border border-transparent hover-border-light animate-slide-in-left"
+          >
+            <div className={`position-relative flex-shrink-0 bg-${item.color} bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-${item.color}`} style={{ width: 32, height: 32 }}>
+              {item.icon}
+              <span className={`position-absolute top-0 start-100 translate-middle p-1 bg-${item.color} border border-light rounded-circle shadow-sm pulse-dot`}></span>
+            </div>
+            <div className="flex-grow-1 min-w-0">
+              <div className="d-flex align-items-center justify-content-between">
+                <h6 className="mb-0 fw-bold text-truncate" style={{ fontSize: '0.8rem' }}>{item.text}</h6>
+                <span className="text-muted flex-shrink-0 ms-2" style={{ fontSize: '0.65rem' }}>{item.time}</span>
               </div>
-              <div className="flex-grow-1 min-w-0">
-                <div className="d-flex align-items-center justify-content-between">
-                  <h6 className="mb-0 fw-bold text-truncate" style={{ fontSize: '0.8rem' }}>{item.text}</h6>
-                  <span className="text-muted flex-shrink-0 ms-2" style={{ fontSize: '0.65rem' }}>{item.time}</span>
-                </div>
-              </div>
-              <div className="flex-shrink-0 opacity-25">
-                <ArrowUpRight size={12} />
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+            </div>
+            <div className="flex-shrink-0 opacity-25">
+              <ArrowUpRight size={12} />
+            </div>
+          </div>
+        ))}
       </div>
 
       <style jsx>{`
+        .animate-slide-in-left {
+          animation: slideInLeft 0.3s ease-out forwards;
+        }
+        @keyframes slideInLeft {
+          from { opacity: 0; transform: translateX(-20px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
         .pulse-dot {
           animation: pulse 2s infinite;
         }

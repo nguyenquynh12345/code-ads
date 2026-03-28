@@ -1,0 +1,224 @@
+thiết kế một cái modal upload ảnh có nút confirm và reject có khung ảnh preview có ô điền tên ảnh
+
+I'll create a beautiful image upload modal with preview, name input, and confirm/reject buttons.
+
+Đây là modal upload ảnh với đầy đủ tính năng:
+
+Kéo thả hoặc nhấn để chọn ảnh từ máy
+Khung preview hiển thị ảnh đã chọn với nút xóa
+Ô nhập tên ảnh — tự động điền tên file
+Nút Xác nhận chỉ bật khi có ảnh + tên
+Nút Hủy bỏ để reset toàn bộ
+Thử kéo thả một ảnh vào khung upload xem nhé! Bạn muốn thêm gì không, ví dụ như thanh progress bar khi upload? 🎨
+
+
+
+Canva AI responded with:
+
+I'll create a beautiful image upload modal with preview, name input, and confirm/reject buttons.
+
+Đây là modal upload ảnh với đầy đủ tính năng:
+
+Kéo thả hoặc nhấn để chọn ảnh từ máy
+Khung preview hiển thị ảnh đã chọn với nút xóa
+Ô nhập tên ảnh — tự động điền tên file
+Nút Xác nhận chỉ bật khi có ảnh + tên
+Nút Hủy bỏ để reset toàn bộ
+Th��� kéo thả một ảnh vào khung upload xem nhé! Bạn muốn thêm gì không, ví dụ như thanh progress bar khi upload? 🎨features.json {"persistence_enabled":false,"app_name":"Image Upload Modal","avoids_browser_dialogs":true,"avoids_viewport_units":true,"verified_editable_features_usage":true,"edit_panel":{"modal_title":{"type":"text_input","label":"Tiêu đề Modal","placeholder":"Tải ảnh lên"},"confirm_text":{"type":"text_input","label":"Nút xác nhận","placeholder":"Xác nhận"},"reject_text":{"type":"text_input","label":"Nút từ chối","placeholder":"Hủy bỏ"}}}
+
+<!doctype html> <html lang="vi" class="h-full"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Image Upload Modal</title> <script src="https://cdn.tailwindcss.com/3.4.17"></script> <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script> <script src="/_sdk/element_sdk.js"></script> <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"> <style> * { font-family: 'DM Sans', sans-serif; } .drop-zone.drag-over { border-color: var(--c-primary); background: rgba(99,102,241,0.08); } .modal-backdrop { background: rgba(15,18,30,0.55); backdrop-filter: blur(8px); } .upload-ring { animation: pulse-ring 2s ease-in-out infinite; } @keyframes pulse-ring { 0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.18); } 50% { box-shadow: 0 0 0 12px rgba(99,102,241,0); } } @keyframes fade-in { from { opacity:0; transform:translateY(16px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } } .modal-card { animation: fade-in .35s cubic-bezier(.21,1.02,.73,1) forwards; } .toast-slide { animation: toast-in .4s ease forwards; } @keyframes toast-in { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } } </style> <style>body { box-sizing: border-box; }</style> <script src="/_sdk/data_sdk.js" type="text/javascript"></script> </head> <body class="h-full overflow-auto" style="background:#0f121e;"><!-- Background pattern --> <div class="h-full w-full flex items-center justify-center p-4" style="background: radial-gradient(ellipse at 30% 20%, rgba(99,102,241,0.12) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(244,114,182,0.08) 0%, transparent 60%);"><!-- Toast --> <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 hidden"> <div class="toast-slide flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium shadow-lg" style="background:#1e2235;color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);"><i data-lucide="check-circle" style="width:18px;height:18px;color:#6366f1;"></i> <span id="toast-msg"></span> </div> </div><!-- Modal --> <div class="modal-backdrop fixed inset-0 z-40 flex items-center justify-center p-4"> <div class="modal-card w-full max-w-md rounded-2xl overflow-hidden shadow-2xl" style="background:#181b2e;border:1px solid rgba(255,255,255,0.06);"><!-- Header --> <div class="flex items-center justify-between px-6 pt-6 pb-2"> <h2 id="modal-title" class="text-lg font-bold" style="color:#e2e8f0;">Tải ảnh lên</h2><button onclick="resetAll()" class="p-1.5 rounded-lg transition hover:bg-white/5" style="color:#64748b;"> <i data-lucide="x" style="width:20px;height:20px;"></i> </button> </div> <div class="px-6 pb-6 pt-2 space-y-4"><!-- Drop Zone / Preview --> <div id="drop-zone" class="drop-zone relative rounded-xl border-2 border-dashed transition-all cursor-pointer flex items-center justify-center overflow-hidden" style="border-color:rgba(99,102,241,0.3);background:rgba(99,102,241,0.04);min-height:200px;" onclick="document.getElementById('file-input').click()"><!-- Upload prompt --> <div id="upload-prompt" class="flex flex-col items-center gap-3 py-6"> <div class="upload-ring w-14 h-14 rounded-full flex items-center justify-center" style="background:rgba(99,102,241,0.12);border:2px solid rgba(99,102,241,0.25);"><i data-lucide="image-plus" style="width:26px;height:26px;color:#818cf8;"></i> </div> <div class="text-center"> <p class="text-sm font-semibold" style="color:#c7d2fe;">Kéo thả hoặc nhấn để chọn ảnh</p> <p class="text-xs mt-1" style="color:#64748b;">PNG, JPG, WEBP • Tối đa 10MB</p> </div> </div><!-- Image Preview --> <div id="preview-wrap" class="hidden w-full h-full"><img id="preview-img" class="w-full object-contain" style="max-height:240px;" alt="Preview"> <button id="remove-btn" onclick="event.stopPropagation();resetImage();" class="absolute top-2 right-2 p-1.5 rounded-lg shadow-md transition hover:scale-105" style="background:rgba(15,18,30,0.8);color:#f87171;"> <i data-lucide="trash-2" style="width:16px;height:16px;"></i> </button> </div><input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleFile(this.files[0])"> </div><!-- File info --> <div id="file-info" class="hidden flex items-center gap-3 p-3 rounded-xl" style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.12);"><i data-lucide="file-image" style="width:18px;height:18px;color:#818cf8;"></i> <div class="flex-1 min-w-0"> <p id="file-name-display" class="text-xs font-medium truncate" style="color:#c7d2fe;"></p> <p id="file-size-display" class="text-xs" style="color:#64748b;"></p> </div> </div><!-- Image Name Input --> <div><label for="img-name" class="block text-xs font-semibold mb-1.5" style="color:#94a3b8;">Tên ảnh</label> <input type="text" id="img-name" placeholder="Nhập tên cho ảnh..." class="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition focus:ring-2" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:#e2e8f0;--tw-ring-color:rgba(99,102,241,0.4);"> </div><!-- Buttons --> <div class="flex gap-3 pt-1"><button id="reject-btn" onclick="handleReject()" class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition hover:bg-white/10" style="color:#94a3b8;border:1px solid rgba(255,255,255,0.08);background:transparent;"> Hủy bỏ </button> <button id="confirm-btn" onclick="handleConfirm()" class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed" style="background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;border:none;" disabled> Xác nhận </button> </div> </div> </div> </div> </div> <script> let currentFile = null; const defaultConfig = { modal_title: 'Tải ảnh lên', confirm_text: 'Xác nhận', reject_text: 'Hủy bỏ', background_color: '#0f121e', surface_color: '#181b2e', text_color: '#e2e8f0', primary_color: '#6366f1', secondary_color: '#94a3b8', font_family: 'DM Sans', font_size: 14 }; window.elementSdk.init({ defaultConfig, onConfigChange: async (config) => { const c = key => config[key] || defaultConfig[key]; document.getElementById('modal-title').textContent = c('modal_title'); document.getElementById('confirm-btn').textContent = c('confirm_text'); document.getElementById('reject-btn').textContent = c('reject_text'); document.body.style.background = c('background_color'); document.querySelector('.modal-card').style.background = c('surface_color'); document.getElementById('modal-title').style.color = c('text_color'); document.getElementById('img-name').style.color = c('text_color'); const font = c('font_family') + ', sans-serif'; document.body.style.fontFamily = font; const base = c('font_size'); document.getElementById('modal-title').style.fontSize = (base * 1.3) + 'px'; document.getElementById('img-name').style.fontSize = base + 'px'; document.getElementById('confirm-btn').style.fontSize = base + 'px'; document.getElementById('reject-btn').style.fontSize = base + 'px'; document.getElementById('reject-btn').style.color = c('secondary_color'); }, mapToCapabilities: (config) => ({ recolorables: [ { get: () => config.background_color || defaultConfig.background_color, set: v => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } }, { get: () => config.surface_color || defaultConfig.surface_color, set: v => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } }, { get: () => config.text_color || defaultConfig.text_color, set: v => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } }, { get: () => config.primary_color || defaultConfig.primary_color, set: v => { config.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); } }, { get: () => config.secondary_color || defaultConfig.secondary_color, set: v => { config.secondary_color = v; window.elementSdk.setConfig({ secondary_color: v }); } } ], borderables: [], fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: v => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } }, fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: v => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } } }), mapToEditPanelValues: (config) => new Map([ ['modal_title', config.modal_title || defaultConfig.modal_title], ['confirm_text', config.confirm_text || defaultConfig.confirm_text], ['reject_text', config.reject_text || defaultConfig.reject_text] ]) }); // Drag & drop const dropZone = document.getElementById('drop-zone'); ['dragenter','dragover'].forEach(e => dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('drag-over'); })); ['dragleave','drop'].forEach(e => dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.remove('drag-over'); })); dropZone.addEventListener('drop', e => { if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); }); function handleFile(file) { if (!file || !file.type.startsWith('image/')) return showToast('Vui lòng chọn file ảnh'); if (file.size > 10 * 1024 * 1024) return showToast('File quá lớn (tối đa 10MB)'); currentFile = file; const reader = new FileReader(); reader.onload = e => { document.getElementById('preview-img').src = e.target.result; document.getElementById('upload-prompt').classList.add('hidden'); document.getElementById('preview-wrap').classList.remove('hidden'); document.getElementById('file-info').classList.remove('hidden'); document.getElementById('file-name-display').textContent = file.name; document.getElementById('file-size-display').textContent = (file.size / 1024).toFixed(1) + ' KB'; if (!document.getElementById('img-name').value) { document.getElementById('img-name').value = file.name.replace(/\.[^.]+$/, ''); } updateConfirmState(); }; reader.readAsDataURL(file); } function resetImage() { currentFile = null; document.getElementById('file-input').value = ''; document.getElementById('preview-wrap').classList.add('hidden'); document.getElementById('upload-prompt').classList.remove('hidden'); document.getElementById('file-info').classList.add('hidden'); updateConfirmState(); } function resetAll() { resetImage(); document.getElementById('img-name').value = ''; } document.getElementById('img-name').addEventListener('input', updateConfirmState); function updateConfirmState() { document.getElementById('confirm-btn').disabled = !(currentFile && document.getElementById('img-name').value.trim()); } function handleConfirm() { if (!currentFile) return; const name = document.getElementById('img-name').value.trim(); showToast(`✓ Đã xác nhận "${name}"`); setTimeout(resetAll, 1200); } function handleReject() { showToast('Đã hủy bỏ'); resetAll(); } function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toast-msg').textContent = msg; t.classList.remove('hidden'); clearTimeout(t._timer); t._timer = setTimeout(() => t.classList.add('hidden'), 2500); } lucide.createIcons(); </script> </body> </html>```
+
+
+
+<!doctype html>
+<html lang="vi" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Upload Modal</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'DM Sans', sans-serif; }
+    .drop-zone.drag-over { border-color: var(--c-primary); background: rgba(99,102,241,0.08); }
+    .modal-backdrop { background: rgba(15,18,30,0.55); backdrop-filter: blur(8px); }
+    .upload-ring { animation: pulse-ring 2s ease-in-out infinite; }
+    @keyframes pulse-ring {
+      0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.18); }
+      50% { box-shadow: 0 0 0 12px rgba(99,102,241,0); }
+    }
+    @keyframes fade-in { from { opacity:0; transform:translateY(16px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+    .modal-card { animation: fade-in .35s cubic-bezier(.21,1.02,.73,1) forwards; }
+    .toast-slide { animation: toast-in .4s ease forwards; }
+    @keyframes toast-in { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full overflow-auto" style="background:#0f121e;"><!-- Background pattern -->
+  <div class="h-full w-full flex items-center justify-center p-4" style="background: radial-gradient(ellipse at 30% 20%, rgba(99,102,241,0.12) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(244,114,182,0.08) 0%, transparent 60%);"><!-- Toast -->
+   <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 hidden">
+    <div class="toast-slide flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium shadow-lg" style="background:#1e2235;color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);"><i data-lucide="check-circle" style="width:18px;height:18px;color:#6366f1;"></i> <span id="toast-msg"></span>
+    </div>
+   </div><!-- Modal -->
+   <div class="modal-backdrop fixed inset-0 z-40 flex items-center justify-center p-4">
+    <div class="modal-card w-full max-w-md rounded-2xl overflow-hidden shadow-2xl" style="background:#181b2e;border:1px solid rgba(255,255,255,0.06);"><!-- Header -->
+     <div class="flex items-center justify-between px-6 pt-6 pb-2">
+      <h2 id="modal-title" class="text-lg font-bold" style="color:#e2e8f0;">Tải ảnh lên</h2><button onclick="resetAll()" class="p-1.5 rounded-lg transition hover:bg-white/5" style="color:#64748b;"> <i data-lucide="x" style="width:20px;height:20px;"></i> </button>
+     </div>
+     <div class="px-6 pb-6 pt-2 space-y-4"><!-- Drop Zone / Preview -->
+      <div id="drop-zone" class="drop-zone relative rounded-xl border-2 border-dashed transition-all cursor-pointer flex items-center justify-center overflow-hidden" style="border-color:rgba(99,102,241,0.3);background:rgba(99,102,241,0.04);min-height:200px;" onclick="document.getElementById('file-input').click()"><!-- Upload prompt -->
+       <div id="upload-prompt" class="flex flex-col items-center gap-3 py-6">
+        <div class="upload-ring w-14 h-14 rounded-full flex items-center justify-center" style="background:rgba(99,102,241,0.12);border:2px solid rgba(99,102,241,0.25);"><i data-lucide="image-plus" style="width:26px;height:26px;color:#818cf8;"></i>
+        </div>
+        <div class="text-center">
+         <p class="text-sm font-semibold" style="color:#c7d2fe;">Kéo thả hoặc nhấn để chọn ảnh</p>
+         <p class="text-xs mt-1" style="color:#64748b;">PNG, JPG, WEBP • Tối đa 10MB</p>
+        </div>
+       </div><!-- Image Preview -->
+       <div id="preview-wrap" class="hidden w-full h-full"><img id="preview-img" class="w-full object-contain" style="max-height:240px;" alt="Preview"> <button id="remove-btn" onclick="event.stopPropagation();resetImage();" class="absolute top-2 right-2 p-1.5 rounded-lg shadow-md transition hover:scale-105" style="background:rgba(15,18,30,0.8);color:#f87171;"> <i data-lucide="trash-2" style="width:16px;height:16px;"></i> </button>
+       </div><input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleFile(this.files[0])">
+      </div><!-- File info -->
+      <div id="file-info" class="hidden flex items-center gap-3 p-3 rounded-xl" style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.12);"><i data-lucide="file-image" style="width:18px;height:18px;color:#818cf8;"></i>
+       <div class="flex-1 min-w-0">
+        <p id="file-name-display" class="text-xs font-medium truncate" style="color:#c7d2fe;"></p>
+        <p id="file-size-display" class="text-xs" style="color:#64748b;"></p>
+       </div>
+      </div><!-- Image Name Input -->
+      <div><label for="img-name" class="block text-xs font-semibold mb-1.5" style="color:#94a3b8;">Tên ảnh</label> <input type="text" id="img-name" placeholder="Nhập tên cho ảnh..." class="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition focus:ring-2" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:#e2e8f0;--tw-ring-color:rgba(99,102,241,0.4);">
+      </div><!-- Buttons -->
+      <div class="flex gap-3 pt-1"><button id="reject-btn" onclick="handleReject()" class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition hover:bg-white/10" style="color:#94a3b8;border:1px solid rgba(255,255,255,0.08);background:transparent;"> Hủy bỏ </button> <button id="confirm-btn" onclick="handleConfirm()" class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed" style="background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;border:none;" disabled> Xác nhận </button>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    let currentFile = null;
+
+    const defaultConfig = {
+      modal_title: 'Tải ảnh lên',
+      confirm_text: 'Xác nhận',
+      reject_text: 'Hủy bỏ',
+      background_color: '#0f121e',
+      surface_color: '#181b2e',
+      text_color: '#e2e8f0',
+      primary_color: '#6366f1',
+      secondary_color: '#94a3b8',
+      font_family: 'DM Sans',
+      font_size: 14
+    };
+
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange: async (config) => {
+        const c = key => config[key] || defaultConfig[key];
+        document.getElementById('modal-title').textContent = c('modal_title');
+        document.getElementById('confirm-btn').textContent = c('confirm_text');
+        document.getElementById('reject-btn').textContent = c('reject_text');
+
+        document.body.style.background = c('background_color');
+        document.querySelector('.modal-card').style.background = c('surface_color');
+        document.getElementById('modal-title').style.color = c('text_color');
+        document.getElementById('img-name').style.color = c('text_color');
+
+        const font = c('font_family') + ', sans-serif';
+        document.body.style.fontFamily = font;
+
+        const base = c('font_size');
+        document.getElementById('modal-title').style.fontSize = (base * 1.3) + 'px';
+        document.getElementById('img-name').style.fontSize = base + 'px';
+        document.getElementById('confirm-btn').style.fontSize = base + 'px';
+        document.getElementById('reject-btn').style.fontSize = base + 'px';
+        document.getElementById('reject-btn').style.color = c('secondary_color');
+      },
+      mapToCapabilities: (config) => ({
+        recolorables: [
+          { get: () => config.background_color || defaultConfig.background_color, set: v => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+          { get: () => config.surface_color || defaultConfig.surface_color, set: v => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+          { get: () => config.text_color || defaultConfig.text_color, set: v => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+          { get: () => config.primary_color || defaultConfig.primary_color, set: v => { config.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); } },
+          { get: () => config.secondary_color || defaultConfig.secondary_color, set: v => { config.secondary_color = v; window.elementSdk.setConfig({ secondary_color: v }); } }
+        ],
+        borderables: [],
+        fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: v => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+        fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: v => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+      }),
+      mapToEditPanelValues: (config) => new Map([
+        ['modal_title', config.modal_title || defaultConfig.modal_title],
+        ['confirm_text', config.confirm_text || defaultConfig.confirm_text],
+        ['reject_text', config.reject_text || defaultConfig.reject_text]
+      ])
+    });
+
+    // Drag & drop
+    const dropZone = document.getElementById('drop-zone');
+    ['dragenter','dragover'].forEach(e => dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('drag-over'); }));
+    ['dragleave','drop'].forEach(e => dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.remove('drag-over'); }));
+    dropZone.addEventListener('drop', e => { if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+
+    function handleFile(file) {
+      if (!file || !file.type.startsWith('image/')) return showToast('Vui lòng chọn file ảnh');
+      if (file.size > 10 * 1024 * 1024) return showToast('File quá lớn (tối đa 10MB)');
+      currentFile = file;
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('preview-img').src = e.target.result;
+        document.getElementById('upload-prompt').classList.add('hidden');
+        document.getElementById('preview-wrap').classList.remove('hidden');
+        document.getElementById('file-info').classList.remove('hidden');
+        document.getElementById('file-name-display').textContent = file.name;
+        document.getElementById('file-size-display').textContent = (file.size / 1024).toFixed(1) + ' KB';
+        if (!document.getElementById('img-name').value) {
+          document.getElementById('img-name').value = file.name.replace(/\.[^.]+$/, '');
+        }
+        updateConfirmState();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function resetImage() {
+      currentFile = null;
+      document.getElementById('file-input').value = '';
+      document.getElementById('preview-wrap').classList.add('hidden');
+      document.getElementById('upload-prompt').classList.remove('hidden');
+      document.getElementById('file-info').classList.add('hidden');
+      updateConfirmState();
+    }
+
+    function resetAll() {
+      resetImage();
+      document.getElementById('img-name').value = '';
+    }
+
+    document.getElementById('img-name').addEventListener('input', updateConfirmState);
+    function updateConfirmState() {
+      document.getElementById('confirm-btn').disabled = !(currentFile && document.getElementById('img-name').value.trim());
+    }
+
+    function handleConfirm() {
+      if (!currentFile) return;
+      const name = document.getElementById('img-name').value.trim();
+      showToast(`✓ Đã xác nhận "${name}"`);
+      setTimeout(resetAll, 1200);
+    }
+
+    function handleReject() {
+      showToast('Đã hủy bỏ');
+      resetAll();
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toast-msg').textContent = msg;
+      t.classList.remove('hidden');
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => t.classList.add('hidden'), 2500);
+    }
+
+    lucide.createIcons();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e3152b900b60462',t:'MTc3NDY0NTIxMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

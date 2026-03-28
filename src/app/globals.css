@@ -1,8 +1,10 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
 @import "bootstrap-icons/font/bootstrap-icons.css";
+@import "ckeditor5/ckeditor5.css";
 
 :root {
   --sidebar-width: 260px;
+  --sidebar-collapsed-width: 72px;
   --topbar-height: 64px;
   --sidebar-bg: #111827;
   --sidebar-hover: rgba(99, 102, 241, 0.15);
@@ -64,7 +66,28 @@ body {
   z-index: 1050;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+.sidebar.collapsed .sidebar-brand span,
+.sidebar.collapsed .nav-section-title,
+.sidebar.collapsed .nav-link span {
+  display: none;
+}
+
+.sidebar.collapsed .nav-link {
+  justify-content: center;
+  padding: 0.65rem 0;
+  margin: 4px 8px;
+}
+
+.sidebar.collapsed .nav-link i {
+  font-size: 1.2rem;
+  margin: 0;
 }
 
 .sidebar-brand {
@@ -111,6 +134,11 @@ body {
 .main-content {
   margin-left: var(--sidebar-width);
   min-height: 100vh;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-content.collapsed {
+  margin-left: var(--sidebar-collapsed-width);
 }
 
 /* ===== TOPBAR ===== */

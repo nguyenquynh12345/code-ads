@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useToast } from "@/components/ToastProvider";
+import { fetchWithAuth } from "@/lib/api";
 
 interface User {
   id: number;
@@ -10,12 +11,25 @@ interface User {
   email: string;
   role: "Admin" | "Editor" | "User";
   status: "active" | "inactive";
+  phone?: string;
+  bio?: string;
+  language?: string;
+  avatarUrl?: string;
   createdAt: string;
 }
 
 const PAGE_SIZE = 5;
 
-const emptyForm = { fullName: "", username: "", email: "", role: "User" as User["role"], status: "active" as User["status"] };
+const emptyForm = {
+  fullName: "",
+  username: "",
+  email: "",
+  role: "User" as User["role"],
+  status: "active" as User["status"],
+  phone: "",
+  bio: "",
+  language: "vi"
+};
 
 export default function UsersPage() {
   const { showToast } = useToast();
@@ -44,7 +58,7 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:3002/users");
+      const response = await fetchWithAuth("http://localhost:3002/users");
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
@@ -80,7 +94,7 @@ export default function UsersPage() {
   const handleAdd = async () => {
     if (!addForm.fullName.trim() || !addForm.email.trim()) return;
     try {
-      const response = await fetch("http://localhost:3002/users", {
+      const response = await fetchWithAuth("http://localhost:3002/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -104,19 +118,22 @@ export default function UsersPage() {
   // Edit
   const openEdit = (u: User) => {
     setEditUser(u);
-    setEditForm({ 
-      fullName: u.fullName || u.username || "", 
+    setEditForm({
+      fullName: u.fullName || u.username || "",
       username: u.username || "",
-      email: u.email || "", 
-      role: u.role, 
-      status: u.status 
+      email: u.email || "",
+      role: u.role,
+      status: u.status,
+      phone: u.phone || "",
+      bio: u.bio || "",
+      language: u.language || "vi"
     });
   };
 
   const handleEdit = async () => {
     if (!editForm.fullName.trim() || !editForm.email.trim() || !editUser) return;
     try {
-      const response = await fetch(`http://localhost:3002/users/${editUser.id}`, {
+      const response = await fetchWithAuth(`http://localhost:3002/users/${editUser.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editForm),
@@ -136,8 +153,12 @@ export default function UsersPage() {
   // Delete
   const handleDelete = async () => {
     if (!deleteTarget) return;
+    if (deleteTarget.role === "Admin") {
+      showToast("Không thể xóa tài khoản Quản trị viên", "warning");
+      return;
+    }
     try {
-      const response = await fetch(`http://localhost:3002/users/${deleteTarget.id}`, {
+      const response = await fetchWithAuth(`http://localhost:3002/users/${deleteTarget.id}`, {
         method: "DELETE",
       });
       if (response.ok) {
@@ -146,7 +167,8 @@ export default function UsersPage() {
         fetchUsers();
         if (paginated.length === 1 && currentPage > 1) setPage(currentPage - 1);
       } else {
-        showToast("Lỗi khi xóa người dùng", "danger");
+        const errorData = await response.json();
+        showToast(errorData.message || "Lỗi khi xóa người dùng", "danger");
       }
     } catch (err) {
       showToast("Lỗi kết nối máy chủ", "danger");
@@ -157,8 +179,8 @@ export default function UsersPage() {
     role === "Admin"
       ? "badge-soft-danger"
       : role === "Editor"
-      ? "badge-soft-primary"
-      : "badge-soft-info";
+        ? "badge-soft-primary"
+        : "badge-soft-info";
 
   const formatDate = (date: string) => {
     if (!date) return "N/A";
@@ -226,12 +248,12 @@ export default function UsersPage() {
               </thead>
               <tbody className="border-top-0">
                 {loading ? (
-                    <tr>
-                      <td colSpan={6} className="text-center py-5">
-                        <div className="spinner-border spinner-border-sm text-primary me-2"></div>
-                        Đang tải...
-                      </td>
-                    </tr>
+                  <tr>
+                    <td colSpan={6} className="text-center py-5">
+                      <div className="spinner-border spinner-border-sm text-primary me-2"></div>
+                      Đang tải...
+                    </td>
+                  </tr>
                 ) : paginated.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="text-center py-5 text-muted">
@@ -245,11 +267,12 @@ export default function UsersPage() {
                       <td className="px-3">
                         <div className="d-flex align-items-center gap-3">
                           <img
-                            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || user.username || "User")}&size=40&background=6366f1&color=fff&bold=true`}
+                            src={user.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || user.username || "User")}&size=40&background=6366f1&color=fff&bold=true`}
                             alt={user.fullName || user.username}
                             className="rounded-circle shadow-sm"
                             width={40}
                             height={40}
+                            style={{ objectFit: 'cover' }}
                           />
                           <span className="fw-bold text-sm">{user.fullName || user.username}</span>
                         </div>
@@ -282,9 +305,10 @@ export default function UsersPage() {
                             <i className="bi bi-pencil text-primary" />
                           </button>
                           <button
-                            className="btn btn-sm btn-light border shadow-sm rounded-3"
-                            title="Xóa"
-                            onClick={() => setDeleteTarget(user)}
+                            className={`btn btn-sm btn-light border shadow-sm rounded-3 ${user.role === "Admin" ? "opacity-50" : ""}`}
+                            title={user.role === "Admin" ? "Không thể xóa tài khoản Admin" : "Xóa"}
+                            onClick={() => user.role !== "Admin" && setDeleteTarget(user)}
+                            disabled={user.role === "Admin"}
                           >
                             <i className="bi bi-trash text-danger" />
                           </button>
@@ -330,28 +354,41 @@ export default function UsersPage() {
                 <button className="btn-close" onClick={() => setShowAddModal(false)} />
               </div>
               <div className="modal-body">
-                <div className="mb-3">
-                  <label className="form-label small fw-medium">Họ và tên <span className="text-danger">*</span></label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Nhập họ tên"
-                    value={addForm.fullName}
-                    onChange={(e) => setAddForm({ ...addForm, fullName: e.target.value })}
-                  />
+                <div className="row g-2 mb-3">
+                  <div className="col-12 col-md-6">
+                    <label className="form-label small fw-medium">Họ và tên <span className="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Nhập họ tên"
+                      value={addForm.fullName}
+                      onChange={(e) => setAddForm({ ...addForm, fullName: e.target.value })}
+                    />
+                  </div>
+                  <div className="col-12 col-md-6">
+                    <label className="form-label small fw-medium">Email <span className="text-danger">*</span></label>
+                    <input
+                      type="email"
+                      className="form-control"
+                      placeholder="email@example.com"
+                      value={addForm.email}
+                      onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
+                    />
+                  </div>
                 </div>
-                <div className="mb-3">
-                  <label className="form-label small fw-medium">Email <span className="text-danger">*</span></label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    placeholder="email@example.com"
-                    value={addForm.email}
-                    onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
-                  />
-                </div>
-                <div className="row g-2">
-                  <div className="col-6">
+
+                <div className="row g-2 mb-3">
+                  <div className="col-12 col-md-4">
+                    <label className="form-label small fw-medium">Số điện thoại</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Nhập SĐT"
+                      value={addForm.phone}
+                      onChange={(e) => setAddForm({ ...addForm, phone: e.target.value })}
+                    />
+                  </div>
+                  <div className="col-12 col-md-4">
                     <label className="form-label small fw-medium">Vai trò</label>
                     <select className="form-select" value={addForm.role} onChange={(e) => setAddForm({ ...addForm, role: e.target.value as User["role"] })}>
                       <option value="User">User</option>
@@ -359,12 +396,32 @@ export default function UsersPage() {
                       <option value="Admin">Admin</option>
                     </select>
                   </div>
-                  <div className="col-6">
+                  <div className="col-12 col-md-4">
                     <label className="form-label small fw-medium">Trạng thái</label>
                     <select className="form-select" value={addForm.status} onChange={(e) => setAddForm({ ...addForm, status: e.target.value as User["status"] })}>
                       <option value="active">Hoạt động</option>
                       <option value="inactive">Không hoạt động</option>
                     </select>
+                  </div>
+                </div>
+
+                <div className="row g-2 mb-3">
+                  <div className="col-12 col-md-4">
+                    <label className="form-label small fw-medium">Ngôn ngữ</label>
+                    <select className="form-select" value={addForm.language} onChange={(e) => setAddForm({ ...addForm, language: e.target.value })}>
+                      <option value="vi">Tiếng Việt</option>
+                      <option value="en">English (US)</option>
+                    </select>
+                  </div>
+                  <div className="col-12 col-md-8">
+                    <label className="form-label small fw-medium">Tiểu sử</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Giới thiệu ngắn..."
+                      value={addForm.bio}
+                      onChange={(e) => setAddForm({ ...addForm, bio: e.target.value })}
+                    />
                   </div>
                 </div>
               </div>
@@ -390,7 +447,7 @@ export default function UsersPage() {
               <div className="modal-body">
                 <div className="d-flex align-items-center gap-3 mb-4 p-3 bg-light rounded-3">
                   <img
-                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(editUser.fullName || editUser.username || "User")}&size=48&background=6366f1&color=fff`}
+                    src={editUser.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(editUser.fullName || editUser.username || "User")}&size=48&background=6366f1&color=fff`}
                     className="rounded-circle"
                     width={48} height={48} alt=""
                   />
@@ -399,16 +456,24 @@ export default function UsersPage() {
                     <div className="text-muted small">ID: #{editUser.id}</div>
                   </div>
                 </div>
-                <div className="mb-3">
-                  <label className="form-label small fw-medium">Họ và tên</label>
-                  <input type="text" className="form-control" value={editForm.fullName} onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })} />
+
+                <div className="row g-2 mb-3">
+                  <div className="col-12 col-md-6">
+                    <label className="form-label small fw-medium">Họ và tên</label>
+                    <input type="text" className="form-control" value={editForm.fullName} onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })} />
+                  </div>
+                  <div className="col-12 col-md-6">
+                    <label className="form-label small fw-medium">Email</label>
+                    <input type="email" className="form-control" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
+                  </div>
                 </div>
-                <div className="mb-3">
-                  <label className="form-label small fw-medium">Email</label>
-                  <input type="email" className="form-control" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
-                </div>
-                <div className="row g-2">
-                  <div className="col-6">
+
+                <div className="row g-2 mb-3">
+                  <div className="col-12 col-md-4">
+                    <label className="form-label small fw-medium">Số điện thoại</label>
+                    <input type="text" className="form-control" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
+                  </div>
+                  <div className="col-12 col-md-4">
                     <label className="form-label small fw-medium">Vai trò</label>
                     <select className="form-select" value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value as User["role"] })}>
                       <option value="User">User</option>
@@ -416,7 +481,7 @@ export default function UsersPage() {
                       <option value="Admin">Admin</option>
                     </select>
                   </div>
-                  <div className="col-6">
+                  <div className="col-12 col-md-4">
                     <label className="form-label small fw-medium">Trạng thái</label>
                     <select className="form-select" value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value as User["status"] })}>
                       <option value="active">Hoạt động</option>
@@ -424,10 +489,25 @@ export default function UsersPage() {
                     </select>
                   </div>
                 </div>
+
+                <div className="row g-2 mb-3">
+                  <div className="col-12 col-md-4">
+                    <label className="form-label small fw-medium">Ngôn ngữ</label>
+                    <select className="form-select" value={editForm.language} onChange={(e) => setEditForm({ ...editForm, language: e.target.value })}>
+                      <option value="vi">Tiếng Việt</option>
+                      <option value="en">English (US)</option>
+                    </select>
+                  </div>
+                  <div className="col-12 col-md-8">
+                    <label className="form-label small fw-medium">Tiểu sử</label>
+                    <input type="text" className="form-control" value={editForm.bio} onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })} />
+                  </div>
+                </div>
+
               </div>
               <div className="modal-footer border-0 pt-0">
                 <button className="btn btn-light" onClick={() => setEditUser(null)}>Hủy</button>
-                <button className="btn btn-primary px-4" onClick={handleEdit}>Lưu thay đổi</button>
+                <button className="btn btn-primary px-4" onClick={handleEdit} disabled={!editForm.fullName.trim() || !editForm.email.trim()}>Lưu thay đổi</button>
               </div>
             </div>
           </div>

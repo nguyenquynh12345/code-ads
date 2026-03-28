@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Bot, X, Send, Sparkles, MessageSquare, BarChart3, TrendingUp } from "lucide-react";
 
 interface Message {
@@ -76,155 +75,161 @@ export default function AIDataAssistant() {
   return (
     <>
       {/* Floating Toggle Button */}
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setIsOpen(true)}
-        className="position-fixed bottom-0 btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center p-0"
-        style={{ 
-          width: 60, 
-          height: 60, 
-          zIndex: 1060, 
-          right: "90px", // Moved left to avoid StickyNotes
-          bottom: "24px",
-          border: "4px solid rgba(255,255,255,0.1)" 
-        }}
-      >
-
-        <Bot size={28} />
-        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style={{ fontSize: '10px' }}>
-          AI
-        </span>
-      </motion.button>
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="position-fixed bottom-0 btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center p-0 transition-all hover-scale"
+          style={{ 
+            width: 60, 
+            height: 60, 
+            zIndex: 1060, 
+            right: "90px", 
+            bottom: "24px",
+            border: "4px solid rgba(255,255,255,0.1)" 
+          }}
+        >
+          <Bot size={28} />
+          <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style={{ fontSize: '10px' }}>
+            AI
+          </span>
+        </button>
+      )}
 
       {/* Chat Panel */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: 100, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 100, scale: 0.9 }}
-            className="position-fixed glass-card d-flex flex-column overflow-hidden shadow-2xl"
-            style={{ 
-              width: "380px", 
-              height: "550px", 
-              zIndex: 1070, 
-              borderRadius: "24px",
-              background: "var(--glass-bg)",
-              backdropFilter: "blur(20px)",
-              border: "1px solid var(--glass-border)",
-              right: "90px", // Align with button
-              bottom: "90px", // Just above the button
-            }}
-          >
+      {isOpen && (
+        <div
+          className="position-fixed glass-card d-flex flex-column overflow-hidden shadow-2xl animate-fade-in-up"
+          style={{ 
+            width: "380px", 
+            height: "550px", 
+            zIndex: 1070, 
+            borderRadius: "24px",
+            background: "var(--glass-bg)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid var(--glass-border)",
+            right: "90px", 
+            bottom: "90px",
+          }}
+        >
+          {/* Header */}
+          <div className="p-3 border-bottom d-flex align-items-center justify-content-between bg-primary bg-opacity-10">
+            <div className="d-flex align-items-center gap-2">
+              <div className="bg-primary bg-opacity-20 p-2 rounded-3 text-primary">
+                <Sparkles size={18} />
+              </div>
+              <div>
+                <h6 className="mb-0 fw-bold" style={{ fontSize: '0.9rem' }}>AI Insights</h6>
+                <span className="text-success fw-bold" style={{ fontSize: '0.65rem' }}>● Online</span>
+              </div>
+            </div>
+            <button 
+              onClick={() => setIsOpen(false)}
+              className="btn btn-sm btn-light rounded-circle p-1 opacity-75 hover-opacity-100"
+            >
+              <X size={18} />
+            </button>
+          </div>
 
-            {/* Header */}
-            <div className="p-3 border-bottom d-flex align-items-center justify-content-between bg-primary bg-opacity-10">
-              <div className="d-flex align-items-center gap-2">
-                <div className="bg-primary bg-opacity-20 p-2 rounded-3 text-primary">
-                  <Sparkles size={18} />
-                </div>
-                <div>
-                  <h6 className="mb-0 fw-bold" style={{ fontSize: '0.9rem' }}>AI Insights</h6>
-                  <span className="text-success fw-bold" style={{ fontSize: '0.65rem' }}>● Online</span>
+          {/* Messages */}
+          <div 
+            ref={scrollRef}
+            className="flex-grow-1 p-3 overflow-auto d-flex flex-column gap-3"
+            style={{ background: "rgba(255,255,255,0.02)" }}
+          >
+            {messages.map((msg) => (
+              <div 
+                key={msg.id} 
+                className={`d-flex ${msg.sender === "user" ? "justify-content-end" : "justify-content-start"}`}
+              >
+                <div 
+                  className={`p-3 rounded-4 shadow-sm ${
+                    msg.sender === "user" 
+                      ? "bg-primary text-white" 
+                      : "bg-light bg-opacity-50 text-dark-emphasis border"
+                  }`}
+                  style={{ 
+                    maxWidth: "85%", 
+                    fontSize: "0.85rem",
+                    borderTopRightRadius: msg.sender === "user" ? "4px" : "20px",
+                    borderTopLeftRadius: msg.sender === "bot" ? "4px" : "20px",
+                  }}
+                >
+                  {msg.text}
+                  <div className={`mt-1 opacity-50 ${msg.sender === "user" ? "text-end" : ""}`} style={{ fontSize: "0.6rem" }}>
+                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
                 </div>
               </div>
+            ))}
+            {isTyping && (
+              <div className="d-flex justify-content-start">
+                <div className="bg-light bg-opacity-50 p-2 px-3 rounded-4 border">
+                  <div className="typing-dots d-flex gap-1">
+                      <span className="dot"></span>
+                      <span className="dot"></span>
+                      <span className="dot"></span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Suggested Actions */}
+          <div className="px-3 py-2 d-flex gap-2 overflow-auto no-scrollbar">
+            {[
+              { icon: <TrendingUp size={12} />, text: "Doanh thu" },
+              { icon: <BarChart3 size={12} />, text: "Chiến dịch" },
+              { icon: <MessageSquare size={12} />, text: "Gợi ý" },
+            ].map((action, i) => (
               <button 
-                onClick={() => setIsOpen(false)}
-                className="btn btn-sm btn-light rounded-circle p-1 opacity-75 hover-opacity-100"
+                key={i}
+                onClick={() => { setInput(action.text); handleSend(); }}
+                className="btn btn-xs btn-outline-primary rounded-pill text-nowrap py-1 px-3 d-flex align-items-center gap-1"
+                style={{ fontSize: "0.7rem", borderWidth: '1px' }}
               >
-                <X size={18} />
+                {action.icon} {action.text}
+              </button>
+            ))}
+          </div>
+
+          {/* Input */}
+          <div className="p-3 border-top">
+            <div className="d-flex gap-2 bg-light bg-opacity-50 p-1 rounded-pill border">
+              <input 
+                type="text" 
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                placeholder="Hỏi AI về dữ liệu..."
+                className="form-control border-0 shadow-none bg-transparent px-3 py-2"
+                style={{ fontSize: "0.85rem" }}
+              />
+              <button 
+                onClick={handleSend}
+                className="btn btn-primary rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm"
+                style={{ width: 38, height: 38 }}
+              >
+                <Send size={18} />
               </button>
             </div>
-
-            {/* Messages */}
-            <div 
-              ref={scrollRef}
-              className="flex-grow-1 p-3 overflow-auto d-flex flex-column gap-3"
-              style={{ background: "rgba(255,255,255,0.02)" }}
-            >
-              {messages.map((msg) => (
-                <div 
-                  key={msg.id} 
-                  className={`d-flex ${msg.sender === "user" ? "justify-content-end" : "justify-content-start"}`}
-                >
-                  <div 
-                    className={`p-3 rounded-4 shadow-sm ${
-                      msg.sender === "user" 
-                        ? "bg-primary text-white" 
-                        : "bg-light bg-opacity-50 text-dark-emphasis border"
-                    }`}
-                    style={{ 
-                      maxWidth: "85%", 
-                      fontSize: "0.85rem",
-                      borderTopRightRadius: msg.sender === "user" ? "4px" : "20px",
-                      borderTopLeftRadius: msg.sender === "bot" ? "4px" : "20px",
-                    }}
-                  >
-                    {msg.text}
-                    <div className={`mt-1 opacity-50 ${msg.sender === "user" ? "text-end" : ""}`} style={{ fontSize: "0.6rem" }}>
-                      {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {isTyping && (
-                <div className="d-flex justify-content-start">
-                  <div className="bg-light bg-opacity-50 p-2 px-3 rounded-4 border">
-                    <div className="typing-dots d-flex gap-1">
-                        <span className="dot"></span>
-                        <span className="dot"></span>
-                        <span className="dot"></span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Suggested Actions */}
-            <div className="px-3 py-2 d-flex gap-2 overflow-auto no-scrollbar">
-              {[
-                { icon: <TrendingUp size={12} />, text: "Doanh thu" },
-                { icon: <BarChart3 size={12} />, text: "Chiến dịch" },
-                { icon: <MessageSquare size={12} />, text: "Gợi ý" },
-              ].map((action, i) => (
-                <button 
-                  key={i}
-                  onClick={() => { setInput(action.text); handleSend(); }}
-                  className="btn btn-xs btn-outline-primary rounded-pill text-nowrap py-1 px-3 d-flex align-items-center gap-1"
-                  style={{ fontSize: "0.7rem", borderWidth: '1px' }}
-                >
-                  {action.icon} {action.text}
-                </button>
-              ))}
-            </div>
-
-            {/* Input */}
-            <div className="p-3 border-top">
-              <div className="d-flex gap-2 bg-light bg-opacity-50 p-1 rounded-pill border">
-                <input 
-                  type="text" 
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                  placeholder="Hỏi AI về dữ liệu..."
-                  className="form-control border-0 shadow-none bg-transparent px-3 py-2"
-                  style={{ fontSize: "0.85rem" }}
-                />
-                <button 
-                  onClick={handleSend}
-                  className="btn btn-primary rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm"
-                  style={{ width: 38, height: 38 }}
-                >
-                  <Send size={18} />
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
+        .hover-scale { transition: transform 0.2s; }
+        .hover-scale:hover { transform: scale(1.1); }
+        .hover-scale:active { transform: scale(0.95); }
+        
+        .animate-fade-in-up {
+          animation: fadeInUp 0.3s ease-out forwards;
+        }
+        
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
         .dot {
           width: 4px;
           height: 4px;

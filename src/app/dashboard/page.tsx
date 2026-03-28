@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import { Users, DollarSign, ShoppingBag, UserPlus, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
-import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import Skeleton from "@/components/Skeleton";
 import MiniCalendar from "@/components/MiniCalendar";
@@ -46,19 +45,6 @@ export default function DashboardPage() {
   const isDark = theme === "dark";
   const labelColor = isDark ? "#94a3b8" : "#64748b";
   const gridColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)";
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
 
   const stats = [
     { label: "Tổng người dùng", value: "12,450", change: "+12%", icon: <Users size={20} />, badgeClass: "badge-soft-primary", iconColor: "text-primary", sparkColor: "#6366f1", spark: sparkData[0] },
@@ -118,10 +104,10 @@ export default function DashboardPage() {
   const donutSeries = [35, 25, 20, 20];
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="show">
-      <motion.div variants={itemVariants} className="d-flex align-items-center justify-content-between mb-4">
+    <div className="dashboard-content fade-in-up">
+      <div className="d-flex align-items-center justify-content-between mb-4">
         <div>
-          <h4 className="fw-bold mb-1">Tổng quan Dashboard</h4>
+          <h4 className="fw-bold mb-1 font-heading">Tổng quan Dashboard</h4>
           <p className="text-muted text-sm mb-0">Hôm nay là một ngày tuyệt vời để kiểm tra số liệu!</p>
         </div>
         <div className="d-flex gap-2">
@@ -129,12 +115,12 @@ export default function DashboardPage() {
             <TrendingUp size={14} className="me-1" /> Báo cáo
           </button>
         </div>
-      </motion.div>
+      </div>
 
       {/* ── Stat Cards with Sparklines ── */}
       <div className="row g-3 mb-4">
         {stats.map((stat, i) => (
-          <motion.div variants={itemVariants} className="col-6 col-xl-3" key={i}>
+          <div className="col-6 col-xl-3" key={i}>
             <div className="card stat-card glass-card p-3">
               {loading ? (
                 <>
@@ -164,13 +150,13 @@ export default function DashboardPage() {
                 </>
               )}
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
 
       {/* ── Area Chart + Donut ── */}
       <div className="row g-3 mb-4">
-        <motion.div variants={itemVariants} className="col-lg-8">
+        <div className="col-lg-8">
           <div className="card content-card glass-card p-4 h-100">
             {loading ? (
               <div className="d-flex flex-column gap-3">
@@ -191,9 +177,9 @@ export default function DashboardPage() {
               </>
             )}
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div variants={itemVariants} className="col-lg-4">
+        <div className="col-lg-4">
           <div className="card content-card glass-card p-4 h-100">
             {loading ? (
               <div className="d-flex flex-column gap-3 align-items-center">
@@ -209,18 +195,18 @@ export default function DashboardPage() {
               </>
             )}
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* ── Bar Chart + Schedule + Media ── */}
       <div className="row g-3 mb-4">
-        <motion.div variants={itemVariants} className="col-lg-8">
+        <div className="col-lg-8">
           <div className="card content-card glass-card p-4">
             <h6 className="fw-bold mb-3">Doanh thu 6 tháng</h6>
             <Chart options={barOptions} series={barSeries} type="bar" height={240} />
           </div>
-        </motion.div>
-        <motion.div variants={itemVariants} className="col-lg-4">
+        </div>
+        <div className="col-lg-4">
           <div className="card content-card glass-card h-100">
             <div className="p-4 d-flex align-items-center justify-content-between border-bottom border-opacity-10">
               <h6 className="fw-bold mb-0">Lịch trình & Sự kiện</h6>
@@ -253,11 +239,11 @@ export default function DashboardPage() {
               <LivePulseFeed />
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* ── Media preview ── */}
-      <motion.div variants={itemVariants} className="row g-3">
+      <div className="row g-3">
         <div className="col-12">
           <div className="card content-card glass-card">
             <div className="p-4 d-flex align-items-center justify-content-between border-bottom border-opacity-10">
@@ -268,11 +254,9 @@ export default function DashboardPage() {
               <div className="row g-2">
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                   <div key={i} className="col-6 col-md-3 col-lg-2 col-xl-1-5">
-                    <motion.img 
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                    <img 
                       src={`https://picsum.photos/400/400?random=${i}`} 
-                      className="img-fluid rounded-3 w-100 shadow-sm border" 
+                      className="img-fluid rounded-3 w-100 shadow-sm border transition-all hover-lift" 
                       alt="media" 
                       style={{ aspectRatio: "1", objectFit: "cover", cursor: 'pointer' }} 
                       onClick={() => setSelectedImg(`https://picsum.photos/800/800?random=${i}`)}
@@ -283,44 +267,33 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* ── Image Preview Modal ── */}
-      <AnimatePresence>
-        {selectedImg && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-4 bg-black bg-opacity-75"
-            style={{ zIndex: 1100, backdropFilter: "blur(10px)" }}
-            onClick={() => setSelectedImg(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="position-relative"
-              onClick={e => e.stopPropagation()}
+      {selectedImg && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-4 bg-black bg-opacity-75"
+          style={{ zIndex: 1100, backdropFilter: "blur(10px)" }}
+          onClick={() => setSelectedImg(null)}
+        >
+          <div className="position-relative" onClick={e => e.stopPropagation()}>
+            <button 
+              className="btn btn-light rounded-circle position-absolute top-0 end-0 m-3 shadow-lg d-flex align-items-center justify-content-center p-0"
+              style={{ width: 40, height: 40, zIndex: 1101 }}
+              onClick={() => setSelectedImg(null)}
             >
-              <button 
-                className="btn btn-light rounded-circle position-absolute top-0 end-0 m-3 shadow-lg d-flex align-items-center justify-content-center p-0"
-                style={{ width: 40, height: 40, zIndex: 1101 }}
-                onClick={() => setSelectedImg(null)}
-              >
-                <X size={20} />
-              </button>
-              <img 
-                src={selectedImg || undefined} 
-                className="img-fluid rounded-4 shadow-2xl border border-white border-opacity-20" 
-                alt="preview"
-                style={{ maxHeight: "85vh", objectFit: "contain" }} 
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <X size={20} />
+            </button>
+            <img 
+              src={selectedImg || undefined} 
+              className="img-fluid rounded-4 shadow-2xl border border-white border-opacity-20" 
+              alt="preview"
+              style={{ maxHeight: "85vh", objectFit: "contain" }} 
+            />
+          </div>
+        </div>
+      )}
       <AIDataAssistant />
-    </motion.div>
+    </div>
   );
 }
