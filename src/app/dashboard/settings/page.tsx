@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import { useToast } from "@/components/ToastProvider";
 import MediaPickerModal from "@/components/MediaPickerModal";
@@ -63,7 +63,7 @@ export default function SettingsPage() {
     newsletter: false, updates: true, marketing: false,
   });
   const [isCronEnabled, setIsCronEnabled] = useState(true);
-  const fileRef = useRef<HTMLInputElement>(null);
+
 
   const strength = newPassword ? getPasswordStrength(newPassword) : null;
   const passwordsMatch = newPassword && confirmPassword && newPassword === confirmPassword;

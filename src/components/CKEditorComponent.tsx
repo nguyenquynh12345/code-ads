@@ -1,18 +1,18 @@
 import React from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
-import { 
-  ClassicEditor, 
-  Bold, 
-  Italic, 
-  Essentials, 
-  Paragraph, 
-  Link, 
-  List, 
-  BlockQuote, 
-  Table, 
-  TableToolbar, 
-  MediaEmbed, 
-  Heading, 
+import {
+  ClassicEditor,
+  Bold,
+  Italic,
+  Essentials,
+  Paragraph,
+  Link,
+  List,
+  BlockQuote,
+  Table,
+  TableToolbar,
+  MediaEmbed,
+  Heading,
   Undo,
   Image,
   ImageToolbar,
@@ -21,8 +21,9 @@ import {
   ImageUpload,
   Base64UploadAdapter,
   Indent,
-  Plugin,
-  ButtonView
+  Locale,
+  ButtonView,
+  Editor
 } from 'ckeditor5';
 
 import 'ckeditor5/ckeditor5.css';
@@ -30,8 +31,8 @@ import 'ckeditor5/ckeditor5.css';
 /**
  * Custom plugin to add a "Media Library" button to the CKEditor toolbar.
  */
-function MediaPickerPlugin(editor: any) {
-  editor.ui.componentFactory.add('mediaPicker', (locale: any) => {
+function MediaPickerPlugin(editor: Editor) {
+  editor.ui.componentFactory.add('mediaPicker', (locale: Locale) => {
     const view = new ButtonView(locale);
     view.set({
       label: 'Thư viện ảnh',
@@ -40,7 +41,7 @@ function MediaPickerPlugin(editor: any) {
     });
 
     view.on('execute', () => {
-      const onMediaPickerClick = editor.config.get('onMediaPickerClick');
+      const onMediaPickerClick = editor.config.get('onMediaPickerClick') as (() => void) | undefined;
       if (onMediaPickerClick) {
         onMediaPickerClick();
       }
@@ -52,51 +53,53 @@ function MediaPickerPlugin(editor: any) {
 
 interface CKEditorComponentProps {
     data: string;
-    onChange: (event: any, editor: any) => void;
-    onReady?: (editor: any) => void;
+    onChange: (event: unknown, editor: ClassicEditor) => void;
+    onReady?: (editor: ClassicEditor) => void;
     onMediaPickerClick?: () => void;
-    config?: any;
+    config?: Record<string, unknown>;
 }
 
 const CKEditorComponent = ({ data, onChange, onReady, onMediaPickerClick, config }: CKEditorComponentProps) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const editorConfig: any = {
+        onMediaPickerClick,
+        plugins: [
+          MediaPickerPlugin,
+          Essentials,
+          Paragraph,
+          Bold,
+          Italic,
+          Link,
+          List,
+          BlockQuote,
+          Table,
+          TableToolbar,
+          MediaEmbed,
+          Heading,
+          Undo,
+          Image,
+          ImageToolbar,
+          ImageCaption,
+          ImageStyle,
+          ImageUpload,
+          Base64UploadAdapter,
+          Indent
+        ],
+        toolbar: [
+            'undo', 'redo', '|',
+            'heading', '|',
+            'bold', 'italic', '|',
+            'link', 'mediaPicker', '|',
+            'bulletedList', 'numberedList', 'blockQuote', '|',
+            'insertTable', 'mediaEmbed'
+        ],
+        ...config
+    };
     return (
         <CKEditor
             editor={ClassicEditor}
             data={data}
-            config={{
-                onMediaPickerClick,
-                plugins: [
-                  MediaPickerPlugin,
-                  Essentials, 
-                  Paragraph, 
-                  Bold, 
-                  Italic, 
-                  Link, 
-                  List, 
-                  BlockQuote, 
-                  Table, 
-                  TableToolbar, 
-                  MediaEmbed, 
-                  Heading, 
-                  Undo,
-                  Image,
-                  ImageToolbar,
-                  ImageCaption,
-                  ImageStyle,
-                  ImageUpload,
-                  Base64UploadAdapter,
-                  Indent
-                ],
-                toolbar: [
-                    'undo', 'redo', '|',
-                    'heading', '|', 
-                    'bold', 'italic', '|',
-                    'link', 'mediaPicker', '|',
-                    'bulletedList', 'numberedList', 'blockQuote', '|',
-                    'insertTable', 'mediaEmbed'
-                ],
-                ...config
-            }}
+            config={editorConfig}
             onReady={onReady}
             onChange={onChange}
         />

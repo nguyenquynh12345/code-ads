@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Save, Image as ImageIcon, X, Globe, Layout, Type, FileText, ArrowLeft, Eye, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
+import type { ClassicEditor, Writer } from "ckeditor5";
+import { Save, Image as ImageIcon, X, Globe, Layout, Type, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import MediaPickerModal from "./MediaPickerModal";
 import { useToast } from "./ToastProvider";
 import { fetchWithAuth, API_BASE_URL } from "@/lib/api";
@@ -15,15 +16,15 @@ const CKEditorCustom = dynamic(
   { ssr: false, loading: () => <div className="p-5 text-center border rounded-4 bg-light text-muted">Đang tải trình soạn thảo...</div> }
 );
 
-export default function PostEditor({ initialData, isEditing = false }: { initialData?: any, isEditing?: boolean }) {
+export default function PostEditor({ initialData, isEditing = false }: { initialData?: Record<string, unknown>, isEditing?: boolean }) {
   const router = useRouter();
   const { showToast } = useToast();
-  const [title, setTitle] = useState(initialData?.title || "");
-  const [content, setContent] = useState(initialData?.content || "");
-  const [thumbnailUrl, setThumbnailUrl] = useState(initialData?.thumbnailUrl || "");
-  const [status, setStatus] = useState(initialData?.status || "published");
-  const [categories, setCategories] = useState<any[]>([]);
-  const [categoryId, setCategoryId] = useState<number | string>(initialData?.categoryId || "");
+  const [title, setTitle] = useState((initialData?.title as string) || "");
+  const [content, setContent] = useState((initialData?.content as string) || "");
+  const [thumbnailUrl, setThumbnailUrl] = useState((initialData?.thumbnailUrl as string) || "");
+  const [status, setStatus] = useState((initialData?.status as string) || "published");
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+  const [categoryId, setCategoryId] = useState<number | string>((initialData?.categoryId as number | string) || "");
   const [loading, setLoading] = useState(false);
   
   // Sidebar accordion state
@@ -36,7 +37,7 @@ export default function PostEditor({ initialData, isEditing = false }: { initial
   const [mediaTarget, setMediaTarget] = useState<"thumbnail" | "editor">("editor");
   
   // Ref to store the CKEditor instance
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<ClassicEditor | null>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -49,8 +50,8 @@ export default function PostEditor({ initialData, isEditing = false }: { initial
         const data = await res.json();
         setCategories(data);
       }
-    } catch (err) {
-      console.error("Error fetching categories", err);
+    } catch {
+      console.error("Error fetching categories");
     }
   };
 
@@ -68,7 +69,7 @@ export default function PostEditor({ initialData, isEditing = false }: { initial
     try {
       setLoading(true);
       const url = isEditing 
-        ? `${API_BASE_URL}/posts/${initialData.id}`
+        ? `${API_BASE_URL}/posts/${initialData?.id}`
         : `${API_BASE_URL}/posts`;
       
       const res = await fetchWithAuth(url, {
@@ -89,7 +90,7 @@ export default function PostEditor({ initialData, isEditing = false }: { initial
       } else {
         showToast("Lỗi khi lưu bài viết", "danger");
       }
-    } catch (err) {
+    } catch {
       showToast("Lỗi kết nối máy chủ", "danger");
     } finally {
       setLoading(false);
@@ -102,7 +103,7 @@ export default function PostEditor({ initialData, isEditing = false }: { initial
     } else if (mediaTarget === "editor" && editorRef.current) {
       const editor = editorRef.current;
       // Programmatically insert image using CKEditor model API
-      editor.model.change((writer: any) => {
+      editor.model.change((writer: Writer) => {
          const imageElement = writer.createElement('imageBlock', {
             src: url
          });
@@ -153,10 +154,10 @@ export default function PostEditor({ initialData, isEditing = false }: { initial
                 <CKEditorCustom
                   data={content}
                   onMediaPickerClick={() => { setMediaTarget("editor"); setShowMediaModal(true); }}
-                  onReady={(editor: any) => {
+                  onReady={(editor: ClassicEditor) => {
                     editorRef.current = editor;
                   }}
-                  onChange={(event: any, editor: any) => {
+                  onChange={(_event: unknown, editor: ClassicEditor) => {
                     const data = editor.getData();
                     setContent(data);
                   }}

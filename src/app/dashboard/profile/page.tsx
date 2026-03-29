@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/ToastProvider";
 import MediaPickerModal from "@/components/MediaPickerModal";
 import { fetchWithAuth, API_BASE_URL } from "@/lib/api";
@@ -36,7 +36,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   useEffect(() => {
     // Read user id from localStorage (saved at login)

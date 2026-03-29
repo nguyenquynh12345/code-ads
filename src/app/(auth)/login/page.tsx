@@ -53,7 +53,7 @@ export default function LoginPage() {
       } else {
         setError(data.message || "Đăng nhập thất bại");
       }
-    } catch (err) {
+    } catch {
       setError("Không thể kết nối đến server");
     } finally {
       setLoading(false);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Search, Tag, Trash2, Edit2, X, Check } from "lucide-react";
+import { Plus, Search, Tag, Trash2, Edit2, Check } from "lucide-react";
 import { fetchWithAuth, API_BASE_URL } from "@/lib/api";
 import { useToast } from "@/components/ToastProvider";
 
@@ -36,7 +36,7 @@ export default function CategoriesPage() {
         const data = await res.json();
         setCategories(data);
       }
-    } catch (err) {
+    } catch {
       showToast("Lỗi khi tải danh sách chuyên mục", "danger");
     } finally {
       setLoading(false);
@@ -71,7 +71,7 @@ export default function CategoriesPage() {
       } else {
         showToast("Lỗi khi lưu chuyên mục", "danger");
       }
-    } catch (err) {
+    } catch {
       showToast("Lỗi kết nối máy chủ", "danger");
     } finally {
       setSubmitting(false);
@@ -91,7 +91,7 @@ export default function CategoriesPage() {
       } else {
         showToast("Không thể xóa chuyên mục", "danger");
       }
-    } catch (err) {
+    } catch {
       showToast("Lỗi kết nối", "danger");
     }
   };

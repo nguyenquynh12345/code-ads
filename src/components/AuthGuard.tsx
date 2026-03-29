@@ -35,7 +35,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       } else {
         setAuthorized(true);
       }
-    } catch (e) {
+    } catch {
       router.push("/login");
     }
   }, [pathname, router]);

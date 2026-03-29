@@ -185,7 +185,7 @@ export default function MediaPickerModal({ onSelect, onClose }: MediaPickerModal
                       minHeight: 140,
                     }}
                     onClick={() => !uploading && fileInputRef.current?.click()}
-                    onDragOver={(e) => { e.preventDefault(); !uploading && setDragOver(true); }}
+                    onDragOver={(e) => { e.preventDefault(); if (!uploading) setDragOver(true); }}
                     onDragLeave={() => setDragOver(false)}
                     onDrop={handleDrop}
                   >

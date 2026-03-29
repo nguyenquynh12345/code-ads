@@ -63,7 +63,7 @@ export default function UsersPage() {
         const data = await response.json();
         setUsers(data);
       }
-    } catch (err) {
+    } catch {
       showToast("Không thể tải danh sách người dùng", "danger");
     } finally {
       setLoading(false);
@@ -110,7 +110,7 @@ export default function UsersPage() {
       } else {
         showToast("Lỗi khi thêm người dùng", "danger");
       }
-    } catch (err) {
+    } catch {
       showToast("Lỗi kết nối máy chủ", "danger");
     }
   };
@@ -145,7 +145,7 @@ export default function UsersPage() {
       } else {
         showToast("Lỗi khi cập nhật", "danger");
       }
-    } catch (err) {
+    } catch {
       showToast("Lỗi kết nối máy chủ", "danger");
     }
   };
@@ -170,7 +170,7 @@ export default function UsersPage() {
         const errorData = await response.json();
         showToast(errorData.message || "Lỗi khi xóa người dùng", "danger");
       }
-    } catch (err) {
+    } catch {
       showToast("Lỗi kết nối máy chủ", "danger");
     }
   };

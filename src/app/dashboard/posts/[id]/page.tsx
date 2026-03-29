@@ -1,16 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import PostEditor from "@/components/PostEditor";
 import { fetchWithAuth, API_BASE_URL } from "@/lib/api";
 import { useToast } from "@/components/ToastProvider";
-import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default function EditPostPage() {
   const { id } = useParams();
-  const [post, setPost] = useState<any>(null);
+  const [post, setPost] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
 
@@ -30,7 +29,7 @@ export default function EditPostPage() {
       } else {
         showToast("Không tìm thấy bài viết", "danger");
       }
-    } catch (err) {
+    } catch {
       showToast("Lỗi khi tải thông tin bài viết", "danger");
     } finally {
       setLoading(false);

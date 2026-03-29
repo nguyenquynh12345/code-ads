@@ -92,7 +92,7 @@ export default function MediaManagerPage() {
         const data = await response.json();
         setUsers(data);
       }
-    } catch (err) {
+    } catch {
       console.error("Failed to fetch users");
     }
   };
@@ -111,7 +111,7 @@ export default function MediaManagerPage() {
         const data = await response.json();
         setFiles(data);
       }
-    } catch (err) {
+    } catch {
       console.error("Failed to fetch media");
     } finally {
       setFiltering(false);
@@ -155,7 +155,7 @@ export default function MediaManagerPage() {
       setFiles(prev => prev.filter(f => !selected.includes(f.id)));
       setSelected([]);
       setShowDeleteModal(false);
-    } catch (err) {
+    } catch {
       console.error("Failed to delete media");
     } finally {
       setLoading(false);
@@ -221,7 +221,7 @@ export default function MediaManagerPage() {
           const data = await response.json();
           uploadedFiles.push(data);
         }
-      } catch (err) {
+      } catch {
         console.error(`Failed to upload ${file.name}`);
       }
     }
@@ -254,7 +254,7 @@ export default function MediaManagerPage() {
       } else {
         showToast("Không thể tải file từ URL này", "danger");
       }
-    } catch (err) {
+    } catch {
       showToast("Lỗi kết nối máy chủ", "danger");
     } finally {
       setDownloading(false);
@@ -348,7 +348,7 @@ export default function MediaManagerPage() {
             </button>
             <div
               className={`mt-3 upload-zone p-4 rounded-4 border-2 border-dashed text-center transition-all ${isDragging ? "border-primary bg-primary bg-opacity-10" : "border-secondary border-opacity-25"}`}
-              onDragOver={(e) => { e.preventDefault(); !loading && setIsDragging(true); }}
+              onDragOver={(e) => { e.preventDefault(); if (!loading) setIsDragging(true); }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDropGlobal}
               onClick={() => setShowUploadModal(true)}
@@ -619,7 +619,7 @@ export default function MediaManagerPage() {
           className="position-fixed top-0 start-0 w-100 h-100 p-3 d-flex align-items-center justify-content-center"
           style={{ zIndex: 1200, background: "rgba(15,18,30,0.55)", backdropFilter: "blur(8px)" }}
           onClick={cancelUpload}
-          onDragOver={(e) => { e.preventDefault(); !loading && setDragOverModal(true); }}
+          onDragOver={(e) => { e.preventDefault(); if (!loading) setDragOverModal(true); }}
           onDragLeave={() => setDragOverModal(false)}
           onDrop={handleDropOnModal}
         >

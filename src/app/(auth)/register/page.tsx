@@ -39,7 +39,7 @@ export default function RegisterPage() {
       } else {
         setError(data.message || "Đăng ký thất bại");
       }
-    } catch (err) {
+    } catch {
       setError("Không thể kết nối đến server");
     } finally {
       setLoading(false);

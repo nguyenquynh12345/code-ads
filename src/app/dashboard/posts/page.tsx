@@ -39,7 +39,7 @@ export default function PostsManagementPage() {
         const data = await res.json();
         setPosts(data);
       }
-    } catch (err) {
+    } catch {
       showToast("Không thể tải danh sách bài viết", "danger");
     } finally {
       setLoading(false);
@@ -56,7 +56,7 @@ export default function PostsManagementPage() {
         setPosts(posts.filter(p => p.id !== id));
         setShowDeleteModal(null);
       }
-    } catch (err) {
+    } catch {
       showToast("Lỗi khi xóa bài viết", "danger");
     }
   };
