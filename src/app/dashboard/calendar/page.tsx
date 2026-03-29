@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import { useToast } from "@/components/ToastProvider";
+import { API_BASE_URL } from "@/lib/api";
 
 interface CalendarEvent {
   id: number;
@@ -47,7 +48,7 @@ const eventTypes = [
 const monthNames = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"];
 const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 
-const API = "http://localhost:3002/scheduler";
+const API = `${API_BASE_URL}/scheduler`;
 
 export default function CalendarPage() {
   const { showToast } = useToast();

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import PostEditor from "@/components/PostEditor";
-import { fetchWithAuth } from "@/lib/api";
+import { fetchWithAuth, API_BASE_URL } from "@/lib/api";
 import { useToast } from "@/components/ToastProvider";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -23,7 +23,7 @@ export default function EditPostPage() {
   const fetchPost = async () => {
     try {
       setLoading(true);
-      const res = await fetchWithAuth(`http://localhost:3002/posts/${id}`);
+      const res = await fetchWithAuth(`${API_BASE_URL}/posts/${id}`);
       if (res.ok) {
         const data = await res.json();
         setPost(data);

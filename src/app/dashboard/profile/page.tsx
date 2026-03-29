@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/components/ToastProvider";
 import MediaPickerModal from "@/components/MediaPickerModal";
-import { fetchWithAuth } from "@/lib/api";
+import { fetchWithAuth, API_BASE_URL } from "@/lib/api";
 
 interface Profile {
   id: number;
@@ -53,7 +53,7 @@ export default function ProfilePage() {
   const fetchProfile = async (id: number) => {
     try {
       setLoading(true);
-      const res = await fetchWithAuth(`http://localhost:3002/auth/profile/${id}`);
+      const res = await fetchWithAuth(`${API_BASE_URL}/auth/profile/${id}`);
       if (res.ok) {
         const data = await res.json();
         setProfile(data);
@@ -76,7 +76,7 @@ export default function ProfilePage() {
       // Explicitly send only necessary fields to prevent DB write rejection of readonly columns
       const payload = { id: profile.id, avatarUrl: url, avatarThumbnailUrl: thumbnailUrl };
       
-      const res = await fetchWithAuth("http://localhost:3002/auth/profile", {
+      const res = await fetchWithAuth("${API_BASE_URL}/auth/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -114,7 +114,7 @@ export default function ProfilePage() {
         language: profile.language,
       };
 
-      const res = await fetchWithAuth("http://localhost:3002/auth/profile", {
+      const res = await fetchWithAuth("${API_BASE_URL}/auth/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

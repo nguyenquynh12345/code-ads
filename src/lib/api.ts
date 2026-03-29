@@ -1,5 +1,7 @@
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3002";
+
 /**
- * A wrapper around the global fetch API to automatically include 
+ * A wrapper around the global fetch API to automatically include
  * the Authorization bearer token from localStorage.
  */
 export async function fetchWithAuth(url: string, options: RequestInit = {}) {

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Grid, List, Upload, Trash2, Search, Filter, Eye, X, Globe, Video } from "lucide-react";
-import { fetchWithAuth } from "@/lib/api";
+import { fetchWithAuth, API_BASE_URL } from "@/lib/api";
 import { useToast } from "@/components/ToastProvider";
 
 interface MediaFile {
@@ -87,7 +87,7 @@ export default function MediaManagerPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetchWithAuth("http://localhost:3002/users");
+      const response = await fetchWithAuth("${API_BASE_URL}/users");
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
@@ -106,7 +106,7 @@ export default function MediaManagerPage() {
       const targetUid = uid || uploaderId;
       if (targetUid) queryParams.append("uploaderId", targetUid);
 
-      const response = await fetchWithAuth(`http://localhost:3002/media?${queryParams.toString()}`);
+      const response = await fetchWithAuth(`${API_BASE_URL}/media?${queryParams.toString()}`);
       if (response.ok) {
         const data = await response.json();
         setFiles(data);
@@ -150,7 +150,7 @@ export default function MediaManagerPage() {
     try {
       setLoading(true);
       await Promise.all(
-        selected.map(id => fetchWithAuth(`http://localhost:3002/media/${id}`, { method: 'DELETE' }))
+        selected.map(id => fetchWithAuth(`${API_BASE_URL}/media/${id}`, { method: 'DELETE' }))
       );
       setFiles(prev => prev.filter(f => !selected.includes(f.id)));
       setSelected([]);
@@ -212,7 +212,7 @@ export default function MediaManagerPage() {
       }
 
       try {
-        const response = await fetchWithAuth("http://localhost:3002/media/upload", {
+        const response = await fetchWithAuth("${API_BASE_URL}/media/upload", {
           method: "POST",
           body: formData,
         });
@@ -235,7 +235,7 @@ export default function MediaManagerPage() {
     if (!downloadUrl.trim()) return;
     try {
       setDownloading(true);
-      const response = await fetchWithAuth("http://localhost:3002/media/download", {
+      const response = await fetchWithAuth("${API_BASE_URL}/media/download", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

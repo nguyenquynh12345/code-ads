@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Search, Tag, Trash2, Edit2, X, Check } from "lucide-react";
-import { fetchWithAuth } from "@/lib/api";
+import { fetchWithAuth, API_BASE_URL } from "@/lib/api";
 import { useToast } from "@/components/ToastProvider";
 
 interface Category {
@@ -31,7 +31,7 @@ export default function CategoriesPage() {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const res = await fetchWithAuth("http://localhost:3002/categories");
+      const res = await fetchWithAuth(`${API_BASE_URL}/categories`);
       if (res.ok) {
         const data = await res.json();
         setCategories(data);
@@ -53,8 +53,8 @@ export default function CategoriesPage() {
     try {
       setSubmitting(true);
       const url = isEditing 
-        ? `http://localhost:3002/categories/${formData.id}` 
-        : "http://localhost:3002/categories";
+        ? `${API_BASE_URL}/categories/${formData.id}` 
+        : `${API_BASE_URL}/categories`;
       
       const res = await fetchWithAuth(url, {
         method: isEditing ? "PATCH" : "POST",
@@ -82,7 +82,7 @@ export default function CategoriesPage() {
     if (!confirm("Bạn có chắc chắn muốn xóa chuyên mục này?")) return;
     
     try {
-      const res = await fetchWithAuth(`http://localhost:3002/categories/${id}`, {
+      const res = await fetchWithAuth(`${API_BASE_URL}/categories/${id}`, {
         method: "DELETE"
       });
       if (res.ok) {

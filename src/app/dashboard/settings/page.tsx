@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import { useToast } from "@/components/ToastProvider";
 import MediaPickerModal from "@/components/MediaPickerModal";
-import { fetchWithAuth } from "@/lib/api";
+import { fetchWithAuth, API_BASE_URL } from "@/lib/api";
 
 const accentColors = [
   { name: "Indigo", value: "#6366f1" },
@@ -74,7 +74,7 @@ export default function SettingsPage() {
       const parsed = JSON.parse(stored) as Profile;
       setProfile({ ...emptyProfile, ...parsed });
       // Refresh from API
-      fetch(`http://localhost:3002/auth/profile/${parsed.id}`)
+      fetch(`${API_BASE_URL}/auth/profile/${parsed.id}`)
         .then(r => r.ok ? r.json() : null)
         .then(data => {
           if (data) {
@@ -89,7 +89,7 @@ export default function SettingsPage() {
 
   const fetchCronStatus = async () => {
     try {
-      const res = await fetchWithAuth("http://localhost:3002/system/settings/is_cron_enabled");
+      const res = await fetchWithAuth("${API_BASE_URL}/system/settings/is_cron_enabled");
       if (res.ok) {
         const data = await res.json();
         setIsCronEnabled(data.value === "true");
@@ -99,7 +99,7 @@ export default function SettingsPage() {
 
   const handleToggleCron = async (val: boolean) => {
     try {
-      const res = await fetchWithAuth("http://localhost:3002/system/settings/is_cron_enabled", {
+      const res = await fetchWithAuth("${API_BASE_URL}/system/settings/is_cron_enabled", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ value: val ? "true" : "false" }),
@@ -119,7 +119,7 @@ export default function SettingsPage() {
     try {
       setUploading(true);
       const updated = { ...profile, avatarUrl: url };
-      const saveRes = await fetch("http://localhost:3002/auth/profile", {
+      const saveRes = await fetch("${API_BASE_URL}/auth/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updated),
@@ -136,7 +136,7 @@ export default function SettingsPage() {
   const handleSaveAccount = async () => {
     try {
       setSaving(true);
-      const res = await fetch("http://localhost:3002/auth/profile", {
+      const res = await fetch("${API_BASE_URL}/auth/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(profile),

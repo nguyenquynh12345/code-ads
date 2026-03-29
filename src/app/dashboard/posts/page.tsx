@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Plus, Search, Trash2, Edit2, Newspaper, User, Clock, CheckCircle, FileText } from "lucide-react";
-import { fetchWithAuth } from "@/lib/api";
+import { fetchWithAuth, API_BASE_URL } from "@/lib/api";
 import { useToast } from "@/components/ToastProvider";
 
 interface Post {
@@ -34,7 +34,7 @@ export default function PostsManagementPage() {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const res = await fetchWithAuth("http://localhost:3002/posts");
+      const res = await fetchWithAuth("${API_BASE_URL}/posts");
       if (res.ok) {
         const data = await res.json();
         setPosts(data);
@@ -48,7 +48,7 @@ export default function PostsManagementPage() {
 
   const handleDelete = async (id: number) => {
     try {
-      const res = await fetchWithAuth(`http://localhost:3002/posts/${id}`, {
+      const res = await fetchWithAuth(`${API_BASE_URL}/posts/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {

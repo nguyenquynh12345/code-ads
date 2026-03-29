@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/components/ToastProvider";
 import { X, Upload, Trash2 } from "lucide-react";
-import { fetchWithAuth } from "@/lib/api";
+import { fetchWithAuth, API_BASE_URL } from "@/lib/api";
 
 interface MediaFile {
   id: number;
@@ -22,7 +22,7 @@ interface MediaPickerModalProps {
   onClose: () => void;
 }
 
-const API = "http://localhost:3002/media";
+const API = `${API_BASE_URL}/media`;
 
 export default function MediaPickerModal({ onSelect, onClose }: MediaPickerModalProps) {
   const { showToast } = useToast();

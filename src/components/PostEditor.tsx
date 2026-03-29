@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { Save, Image as ImageIcon, X, Globe, Layout, Type, FileText, ArrowLeft, Eye, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
 import MediaPickerModal from "./MediaPickerModal";
 import { useToast } from "./ToastProvider";
-import { fetchWithAuth } from "@/lib/api";
+import { fetchWithAuth, API_BASE_URL } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -44,7 +44,7 @@ export default function PostEditor({ initialData, isEditing = false }: { initial
 
   const fetchCategories = async () => {
     try {
-      const res = await fetchWithAuth("http://localhost:3002/categories");
+      const res = await fetchWithAuth(`${API_BASE_URL}/categories`);
       if (res.ok) {
         const data = await res.json();
         setCategories(data);
@@ -68,8 +68,8 @@ export default function PostEditor({ initialData, isEditing = false }: { initial
     try {
       setLoading(true);
       const url = isEditing 
-        ? `http://localhost:3002/posts/${initialData.id}` 
-        : "http://localhost:3002/posts";
+        ? `${API_BASE_URL}/posts/${initialData.id}`
+        : `${API_BASE_URL}/posts`;
       
       const res = await fetchWithAuth(url, {
         method: isEditing ? "PATCH" : "POST",

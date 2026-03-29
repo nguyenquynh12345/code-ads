@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -17,7 +18,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:3002/auth/login", {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -36,7 +37,7 @@ export default function LoginPage() {
 
         // Fetch full profile and persist so Topbar / Profile page can read it
         try {
-          const profileRes = await fetch(`http://localhost:3002/auth/profile/${userId}`, {
+          const profileRes = await fetch(`${API_BASE_URL}/auth/profile/${userId}`, {
             headers: {
               "Authorization": `Bearer ${data.access_token}`
             }

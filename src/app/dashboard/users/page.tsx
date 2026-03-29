@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useToast } from "@/components/ToastProvider";
-import { fetchWithAuth } from "@/lib/api";
+import { fetchWithAuth, API_BASE_URL } from "@/lib/api";
 
 interface User {
   id: number;
@@ -58,7 +58,7 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetchWithAuth("http://localhost:3002/users");
+      const response = await fetchWithAuth("${API_BASE_URL}/users");
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
@@ -94,7 +94,7 @@ export default function UsersPage() {
   const handleAdd = async () => {
     if (!addForm.fullName.trim() || !addForm.email.trim()) return;
     try {
-      const response = await fetchWithAuth("http://localhost:3002/users", {
+      const response = await fetchWithAuth("${API_BASE_URL}/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -133,7 +133,7 @@ export default function UsersPage() {
   const handleEdit = async () => {
     if (!editForm.fullName.trim() || !editForm.email.trim() || !editUser) return;
     try {
-      const response = await fetchWithAuth(`http://localhost:3002/users/${editUser.id}`, {
+      const response = await fetchWithAuth(`${API_BASE_URL}/users/${editUser.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editForm),
@@ -158,7 +158,7 @@ export default function UsersPage() {
       return;
     }
     try {
-      const response = await fetchWithAuth(`http://localhost:3002/users/${deleteTarget.id}`, {
+      const response = await fetchWithAuth(`${API_BASE_URL}/users/${deleteTarget.id}`, {
         method: "DELETE",
       });
       if (response.ok) {
