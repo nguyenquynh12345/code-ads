@@ -76,7 +76,7 @@ export default function ProfilePage() {
       // Explicitly send only necessary fields to prevent DB write rejection of readonly columns
       const payload = { id: profile.id, avatarUrl: url, avatarThumbnailUrl: thumbnailUrl };
       
-      const res = await fetchWithAuth("${API_BASE_URL}/auth/profile", {
+      const res = await fetchWithAuth(`${API_BASE_URL}/auth/profile`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -114,7 +114,7 @@ export default function ProfilePage() {
         language: profile.language,
       };
 
-      const res = await fetchWithAuth("${API_BASE_URL}/auth/profile", {
+      const res = await fetchWithAuth(`${API_BASE_URL}/auth/profile`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

@@ -89,7 +89,7 @@ export default function SettingsPage() {
 
   const fetchCronStatus = async () => {
     try {
-      const res = await fetchWithAuth("${API_BASE_URL}/system/settings/is_cron_enabled");
+      const res = await fetchWithAuth(`${API_BASE_URL}/system/settings/is_cron_enabled`);
       if (res.ok) {
         const data = await res.json();
         setIsCronEnabled(data.value === "true");
@@ -99,7 +99,7 @@ export default function SettingsPage() {
 
   const handleToggleCron = async (val: boolean) => {
     try {
-      const res = await fetchWithAuth("${API_BASE_URL}/system/settings/is_cron_enabled", {
+      const res = await fetchWithAuth(`${API_BASE_URL}/system/settings/is_cron_enabled`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ value: val ? "true" : "false" }),
@@ -119,7 +119,7 @@ export default function SettingsPage() {
     try {
       setUploading(true);
       const updated = { ...profile, avatarUrl: url };
-      const saveRes = await fetch("${API_BASE_URL}/auth/profile", {
+      const saveRes = await fetch(`${API_BASE_URL}/auth/profile`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updated),
@@ -136,7 +136,7 @@ export default function SettingsPage() {
   const handleSaveAccount = async () => {
     try {
       setSaving(true);
-      const res = await fetch("${API_BASE_URL}/auth/profile", {
+      const res = await fetch(`${API_BASE_URL}/auth/profile`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(profile),

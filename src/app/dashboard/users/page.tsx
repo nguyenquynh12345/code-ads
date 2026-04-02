@@ -58,7 +58,7 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetchWithAuth("${API_BASE_URL}/users");
+      const response = await fetchWithAuth(`${API_BASE_URL}/users`);
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
@@ -94,7 +94,7 @@ export default function UsersPage() {
   const handleAdd = async () => {
     if (!addForm.fullName.trim() || !addForm.email.trim()) return;
     try {
-      const response = await fetchWithAuth("${API_BASE_URL}/users", {
+      const response = await fetchWithAuth(`${API_BASE_URL}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -87,7 +87,7 @@ export default function MediaManagerPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetchWithAuth("${API_BASE_URL}/users");
+      const response = await fetchWithAuth(`${API_BASE_URL}/users`);
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
@@ -235,7 +235,7 @@ export default function MediaManagerPage() {
     if (!downloadUrl.trim()) return;
     try {
       setDownloading(true);
-      const response = await fetchWithAuth("${API_BASE_URL}/media/download", {
+      const response = await fetchWithAuth(`${API_BASE_URL}/media/download`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

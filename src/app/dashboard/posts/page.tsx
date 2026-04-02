@@ -34,7 +34,7 @@ export default function PostsManagementPage() {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const res = await fetchWithAuth("${API_BASE_URL}/posts");
+      const res = await fetchWithAuth(`${API_BASE_URL}/posts`);
       if (res.ok) {
         const data = await res.json();
         setPosts(data);
