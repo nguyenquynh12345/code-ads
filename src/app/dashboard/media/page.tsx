@@ -212,7 +212,7 @@ export default function MediaManagerPage() {
       }
 
       try {
-        const response = await fetchWithAuth("${API_BASE_URL}/media/upload", {
+        const response = await fetchWithAuth(`${API_BASE_URL}/media/upload`, {
           method: "POST",
           body: formData,
         });
