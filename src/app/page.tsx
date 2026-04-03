@@ -35,6 +35,7 @@ async function getData() {
 
 import NovelHeader from "@/components/NovelHeader";
 import NovelFooter from "@/components/NovelFooter";
+import { Category, Post } from "@/types";
 
 function NovelCover({ color, icon = "bi-book-half", size = 80 }: { color: string; icon?: string; size?: number }) {
   return (
@@ -49,10 +50,6 @@ function NovelCover({ color, icon = "bi-book-half", size = 80 }: { color: string
 
 export default async function Home() {
   const data = await getData();
-
-  const genres = data.menus 
-    ? data.menus.map((m: any) => m.title) 
-    : ["Tiên Hiệp", "Kiếm Hiệp", "Ngôn Tình", "Đô Thị", "Huyền Huyễn", "Dị Giới", "Võng Du", "Trinh Thám", "Lịch Sử", "Xuyên Không"];
 
   const featuredData = data.featured || [
     {
@@ -71,7 +68,7 @@ export default async function Home() {
     { title: "Toàn Chức Pháp Sư", author: { username: "Loạn" }, category: { name: "Huyền Huyễn" }, chapters: 2892, views: 98000000, color: "#7c3aed", status: "Đang ra" },
   ];
 
-  const newUpdatesData = data.newUpdates?.map((n: any) => ({
+  const newUpdatesData = data.newUpdates?.map((n: Post) => ({
     title: n.title,
     chapter: `Chương ${n.chapters}`,
     time: "vừa xong",
@@ -86,7 +83,7 @@ export default async function Home() {
     ],
   };
 
-  const categoryListData = data.categoryList?.map((c: any) => ({
+  const categoryListData = data.categoryList?.map((c: Category) => ({
     name: c.name,
     count: c.postCount || 0,
     icon: c.icon || "bi-book"
@@ -135,7 +132,7 @@ export default async function Home() {
                 {/* Small featured */}
                 <div className="col-md-6">
                   <div className="d-flex flex-column gap-3 h-100">
-                    {featuredData.slice(1, 3).map((f: any) => (
+                    {featuredData.slice(1, 3).map((f: Post) => (
                       <div key={f.title} className="card border-0 shadow-sm rounded-3 overflow-hidden flex-fill"
                         style={{ background: f.color || "#0891b2" }}>
                         <div className="card-body d-flex flex-column justify-content-end p-3"
@@ -166,7 +163,7 @@ export default async function Home() {
               </div>
 
               <div className="row g-2">
-                {hotNovelsData.map((n: any) => (
+                {hotNovelsData.map((n: Post) => (
                   <div key={n.title} className="col-6 col-md-3">
                     <Link href={`/truyen/${encodeURIComponent(n.title)}`} className="text-decoration-none">
                       <div className="card border-0 shadow-sm rounded-3 h-100 hover-card" style={{ transition: "transform 0.15s" }}>
@@ -212,7 +209,7 @@ export default async function Home() {
 
               <div className="card border-0 shadow-sm rounded-3">
                 <div className="card-body p-0">
-                  {newUpdatesData.map((n: any, i: number) => (
+                  {newUpdatesData.map((n: { title: string; chapter: string; time: string; author: string }, i: number) => (
                     <div key={n.title}
                       className={`d-flex align-items-center gap-3 px-3 py-2 ${i < newUpdatesData.length - 1 ? "border-bottom" : ""}`}
                       style={{ transition: "background 0.1s", cursor: "pointer" }}>
@@ -251,7 +248,7 @@ export default async function Home() {
                 </Link>
               </div>
               <div className="row g-2">
-                {hotNovelsData.filter((n: any) => n.status === "Hoàn").map((n: any) => (
+                {hotNovelsData.filter((n: Post) => n.status === "Hoàn").map((n: Post) => (
                   <div key={n.title} className="col-md-6">
                     <Link href={`/truyen/${encodeURIComponent(n.title)}`} className="text-decoration-none">
                       <div className="card border-0 shadow-sm rounded-3 hover-card" style={{ transition: "transform 0.15s" }}>
@@ -297,7 +294,7 @@ export default async function Home() {
                 </div>
               </div>
               <div className="card-body p-0 pt-2">
-                {rankingsData.daily.map((r: any, i: number) => (
+                {rankingsData.daily.map((r: Post, i: number) => (
                   <div key={r.title} className="d-flex align-items-center gap-2 px-3 py-2 border-bottom">
                     <div className="fw-bold text-center flex-shrink-0"
                       style={{
@@ -330,13 +327,13 @@ export default async function Home() {
               </div>
               <div className="card-body px-3 pt-0 pb-2">
                 <div className="row g-1">
-                  {categoryListData.map((c: any) => (
+                  {categoryListData.map((c: Category) => (
                     <div key={c.name} className="col-6">
                       <Link href={`/the-loai/${encodeURIComponent(c.name)}`}
                         className="text-decoration-none d-flex align-items-center gap-2 py-2 px-2 rounded-2">
                         <i className={`bi ${c.icon} text-muted`} style={{ fontSize: "0.85rem" }} />
                         <span className="text-dark small flex-fill">{c.name}</span>
-                        <span className="text-muted" style={{ fontSize: "0.7rem" }}>{c.count.toLocaleString()}</span>
+                        <span className="text-muted" style={{ fontSize: "0.7rem" }}>{(c.count ?? 0).toLocaleString()}</span>
                       </Link>
                     </div>
                   ))}

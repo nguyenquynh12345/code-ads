@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { API_BASE_URL } from "@/lib/api";
+import { Category } from "@/types";
 
 async function getFooterCats() {
   try {
@@ -13,7 +14,7 @@ async function getFooterCats() {
 }
 
 export default async function NovelFooter() {
-  const categories = await getFooterCats();
+  const categories: Category[] = await getFooterCats();
   return (
     <footer style={{ background: "#1a1a2e", borderTop: "2px solid #e74c3c" }} className="mt-5">
       <div className="container py-4">
@@ -39,11 +40,11 @@ export default async function NovelFooter() {
               ))}
             </div>
           </div>
-
+ 
           <div className="col-6 col-md-2">
             <h6 className="fw-semibold text-white mb-3" style={{ fontSize: "0.85rem" }}>Thể loại</h6>
             <ul className="list-unstyled mb-0">
-              {categories.map((l: any) => (
+              {categories.map((l: Category) => (
                 <li key={l.name} className="mb-2">
                   <Link href={`/the-loai/${encodeURIComponent(l.name)}`}
                     className="text-secondary text-decoration-none" style={{ fontSize: "0.82rem" }}>

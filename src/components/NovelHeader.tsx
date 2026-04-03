@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { API_BASE_URL } from "@/lib/api";
+import { Category, Menu } from "@/types";
 
-async function getMenuItems() {
+async function getMenuItems(): Promise<Menu[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/menus`, { next: { revalidate: 60 } });
     const data = await res.json();
@@ -10,7 +11,7 @@ async function getMenuItems() {
     // Fallback to categories if no menu items
     const catRes = await fetch(`${API_BASE_URL}/categories`, { next: { revalidate: 60 } });
     const cats = await catRes.json();
-    return cats.map((c: any) => ({
+    return cats.map((c: Category) => ({
       title: c.name,
       url: `/the-loai/${encodeURIComponent(c.name)}`,
       icon: c.icon
@@ -88,7 +89,7 @@ export default async function NovelHeader() {
               style={{ fontSize: "0.85rem" }}>
               <i className="bi bi-house-fill me-1" />Trang chủ
             </Link>
-            {menus.map((m: any) => (
+            {menus.map((m: Menu) => (
               <Link key={m.title} href={m.url}
                 className="nav-link text-white px-3 py-2 text-nowrap"
                 style={{ fontSize: "0.85rem" }}>
