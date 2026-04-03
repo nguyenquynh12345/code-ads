@@ -1,288 +1,546 @@
 import Link from "next/link";
 
-export default function Home() {
-  const features = [
-    { icon: "bi-speedometer2", title: "Hiệu suất cao", desc: "Xây dựng trên Next.js 14 với App Router, tối ưu tốc độ tải trang và SEO." },
-    { icon: "bi-palette2", title: "Bootstrap 5", desc: "Giao diện đẹp, responsive hoàn hảo trên mọi thiết bị với Bootstrap 5." },
-    { icon: "bi-shield-check", title: "Bảo mật", desc: "Tích hợp xác thực, phân quyền và các biện pháp bảo mật hiện đại." },
-    { icon: "bi-grid-1x2", title: "Đa màn hình", desc: "Sẵn có dashboard, trang đăng nhập, quản lý người dùng và nhiều hơn nữa." },
-    { icon: "bi-code-slash", title: "TypeScript", desc: "Toàn bộ codebase viết bằng TypeScript giúp phát triển an toàn hơn." },
-    { icon: "bi-lightning-charge", title: "Dễ mở rộng", desc: "Cấu trúc rõ ràng, dễ thêm tính năng và tích hợp với các dịch vụ bên ngoài." },
-  ];
+const genres = [
+  "Tiên Hiệp", "Kiếm Hiệp", "Ngôn Tình", "Đô Thị", "Huyền Huyễn",
+  "Dị Giới", "Võng Du", "Trinh Thám", "Lịch Sử", "Xuyên Không",
+];
 
-  const pricing = [
-    {
-      name: "Starter",
-      price: "Miễn phí",
-      desc: "Phù hợp cho cá nhân và dự án nhỏ",
-      features: ["5 người dùng", "10GB lưu trữ", "Hỗ trợ qua email", "Cập nhật miễn phí"],
-      btnClass: "btn-outline-primary",
-      popular: false,
-    },
-    {
-      name: "Pro",
-      price: "₫299K",
-      period: "/tháng",
-      desc: "Dành cho team và doanh nghiệp vừa",
-      features: ["50 người dùng", "100GB lưu trữ", "Hỗ trợ ưu tiên", "API access", "Analytics nâng cao"],
-      btnClass: "btn-primary",
-      popular: true,
-    },
-    {
-      name: "Enterprise",
-      price: "Liên hệ",
-      desc: "Giải pháp tùy chỉnh cho doanh nghiệp lớn",
-      features: ["Không giới hạn", "Lưu trữ tuỳ chỉnh", "Hỗ trợ 24/7", "SLA đảm bảo", "Triển khai riêng"],
-      btnClass: "btn-outline-dark",
-      popular: false,
-    },
-  ];
+const featured = [
+  {
+    title: "Đấu Phá Thương Khung",
+    author: "Thiên Tàm Thổ Đậu",
+    genre: "Tiên Hiệp",
+    chapters: 1648,
+    views: "125M",
+    desc: "Tại đại lục Đấu Khí, không có ma pháp, chỉ có đấu khí. Tiêu Viêm từ một thiên tài năm xưa bỗng trở thành phế vật, con đường trở lại đỉnh cao đầy gian nan và thử thách...",
+    color: "#6366f1",
+    badge: "Hot",
+  },
+  {
+    title: "Tru Tiên",
+    author: "Tiêu Đỉnh",
+    genre: "Kiếm Hiệp",
+    chapters: 347,
+    views: "89M",
+    desc: "Trương Tiểu Phàm một lần tình cờ học được bí kíp tà đạo Quỷ Vương, từ đó bước vào con đường tu tiên đầy biến cố, giữa thiện và ác, giữa tình và nghĩa...",
+    color: "#0891b2",
+    badge: "Classic",
+  },
+  {
+    title: "Võ Luyện Đỉnh Phong",
+    author: "Mạc Mặc Thực Thần Dương",
+    genre: "Huyền Huyễn",
+    chapters: 3462,
+    views: "210M",
+    desc: "Dương Khai tình cờ nhận được một viên đá hắc sắc kỳ lạ, từ đó bước vào con đường tu luyện không ngừng, chinh phục thiên hà, đứng trên đỉnh võ đạo...",
+    color: "#dc2626",
+    badge: "Top 1",
+  },
+];
 
+const hotNovels = [
+  { title: "Toàn Chức Pháp Sư", author: "Loạn", genre: "Huyền Huyễn", chapters: 2892, views: "98M", color: "#7c3aed", status: "Đang ra" },
+  { title: "Thần Mộ", author: "Thần Đông", genre: "Tiên Hiệp", chapters: 1200, views: "67M", color: "#0f766e", status: "Hoàn" },
+  { title: "Đế Bá", author: "Tiểu Thái Lang", genre: "Dị Giới", chapters: 2100, views: "54M", color: "#b45309", status: "Đang ra" },
+  { title: "Phàm Nhân Tu Tiên", author: "Vong Ngữ", genre: "Tiên Hiệp", chapters: 2348, views: "145M", color: "#065f46", status: "Hoàn" },
+  { title: "Tinh Thần Biến", author: "Ngã Cật Tây Hồng Thị", genre: "Huyền Huyễn", chapters: 3100, views: "88M", color: "#1d4ed8", status: "Đang ra" },
+  { title: "Ngũ Hành Thiên", author: "Canh Tân Tắc Cải", genre: "Kiếm Hiệp", chapters: 870, views: "32M", color: "#7e22ce", status: "Hoàn" },
+  { title: "Hồng Hoang Chi Thuỷ Đại Vũ Trụ", author: "Bạch Trạch", genre: "Lịch Sử", chapters: 420, views: "18M", color: "#be185d", status: "Đang ra" },
+  { title: "Long Vương Truyền Thuyết", author: "Thiên Hạ Bá Xướng", genre: "Đô Thị", chapters: 5300, views: "312M", color: "#c2410c", status: "Hoàn" },
+];
+
+const newUpdates = [
+  { title: "Trọng Sinh Chi Đô Thị Tu Tiên", chapter: "Chương 312", time: "5 phút trước", author: "Mộng Nhập Thần Cơ" },
+  { title: "Hào Môn Tiểu Lão Bà", chapter: "Chương 88", time: "12 phút trước", author: "Liễu Tiểu Tiểu" },
+  { title: "Tiên Vương귀 Hồi Quy", chapter: "Chương 1204", time: "20 phút trước", author: "Phong Lưu Thư Đãi" },
+  { title: "Toàn Cầu Cao Võ", chapter: "Chương 567", time: "35 phút trước", author: "Đại Lực Kim Cang Chỉ" },
+  { title: "Bất Hủ Võ Thánh", chapter: "Chương 2301", time: "1 giờ trước", author: "Thần Kiếm Thiên Tôn" },
+  { title: "Hệ Thống Vô Địch", chapter: "Chương 445", time: "1 giờ trước", author: "Lão Lão Thật Thật" },
+  { title: "Nữ Đế Phong Lưu", chapter: "Chương 190", time: "2 giờ trước", author: "Nhất Lạp Tiểu Thuỷ" },
+  { title: "Siêu Cấp Chiến Binh", chapter: "Chương 789", time: "2 giờ trước", author: "Mặc Vũ Tiêu Tiêu" },
+  { title: "Dị Giới Đế Vương", chapter: "Chương 3210", time: "3 giờ trước", author: "Cửu Thiên Huyết Long" },
+  { title: "Nghịch Thiên Chí Tôn", chapter: "Chương 1567", time: "3 giờ trước", author: "Thiên Cơ Lão Nhân" },
+];
+
+const rankings = {
+  daily: [
+    { title: "Long Vương Truyền Thuyết", author: "Thiên Hạ Bá Xướng", views: "1.2M" },
+    { title: "Võ Luyện Đỉnh Phong", author: "Mạc Mặc Thực Thần Dương", views: "980K" },
+    { title: "Toàn Chức Pháp Sư", author: "Loạn", views: "876K" },
+    { title: "Phàm Nhân Tu Tiên", author: "Vong Ngữ", views: "754K" },
+    { title: "Đấu Phá Thương Khung", author: "Thiên Tàm Thổ Đậu", views: "698K" },
+    { title: "Tinh Thần Biến", author: "Ngã Cật Tây Hồng Thị", views: "612K" },
+    { title: "Thần Mộ", author: "Thần Đông", views: "543K" },
+    { title: "Tru Tiên", author: "Tiêu Đỉnh", views: "487K" },
+  ],
+};
+
+const categoryList = [
+  { name: "Tiên Hiệp", count: 12430, icon: "bi-stars" },
+  { name: "Kiếm Hiệp", count: 8920, icon: "bi-shield" },
+  { name: "Ngôn Tình", count: 15670, icon: "bi-heart" },
+  { name: "Đô Thị", count: 21340, icon: "bi-building" },
+  { name: "Huyền Huyễn", count: 9870, icon: "bi-magic" },
+  { name: "Dị Giới", count: 7650, icon: "bi-globe" },
+  { name: "Võng Du", count: 5430, icon: "bi-controller" },
+  { name: "Xuyên Không", count: 6780, icon: "bi-clock-history" },
+  { name: "Trinh Thám", count: 3210, icon: "bi-search" },
+  { name: "Lịch Sử", count: 4560, icon: "bi-book" },
+];
+
+function NovelCover({ color, icon = "bi-book-half", size = 80 }: { color: string; icon?: string; size?: number }) {
   return (
-    <div>
-      {/* Navbar */}
-      <nav className="navbar navbar-expand-lg landing-nav sticky-top">
-        <div className="container">
-          <a className="navbar-brand d-flex align-items-center gap-2" href="#">
-            <div className="bg-primary rounded-2 d-flex align-items-center justify-content-center"
-              style={{ width: 34, height: 34 }}>
-              <i className="bi bi-lightning-fill text-white" />
+    <div
+      className="rounded-2 d-flex align-items-center justify-content-center flex-shrink-0"
+      style={{ width: size, height: size * 1.4, background: color, opacity: 0.9 }}
+    >
+      <i className={`bi ${icon} text-white`} style={{ fontSize: size * 0.35 }} />
+    </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <div style={{ background: "#f5f5f0", minHeight: "100vh" }}>
+
+      {/* ── Topbar ── */}
+      <div style={{ background: "#1a1a2e", borderBottom: "2px solid #e74c3c" }}>
+        <div className="container d-flex justify-content-between align-items-center py-1">
+          <small className="text-white-50">
+            <i className="bi bi-lightning-fill text-warning me-1" />
+            Đọc truyện online miễn phí, cập nhật nhanh nhất
+          </small>
+          <div className="d-flex gap-3">
+            <Link href="/login" className="text-white-50 text-decoration-none small">
+              <i className="bi bi-person me-1" />Đăng nhập
+            </Link>
+            <Link href="/register" className="text-white-50 text-decoration-none small">
+              <i className="bi bi-person-plus me-1" />Đăng ký
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Header ── */}
+      <header style={{ background: "#1a1a2e" }} className="pb-0">
+        <div className="container py-3">
+          <div className="d-flex align-items-center gap-4 flex-wrap">
+            {/* Logo */}
+            <Link href="/" className="text-decoration-none d-flex align-items-center gap-2">
+              <div className="d-flex align-items-center justify-content-center rounded-2"
+                style={{ width: 40, height: 40, background: "#e74c3c" }}>
+                <i className="bi bi-book-fill text-white fs-5" />
+              </div>
+              <div>
+                <div className="fw-bold text-white fs-5 lh-1">TruyệnHay</div>
+                <div style={{ fontSize: "0.65rem", color: "#aaa" }}>Kho truyện triệu chương</div>
+              </div>
+            </Link>
+
+            {/* Search */}
+            <div className="flex-fill" style={{ maxWidth: 520 }}>
+              <div className="input-group">
+                <input
+                  type="text"
+                  className="form-control border-0"
+                  placeholder="Tìm kiếm truyện, tác giả..."
+                  style={{ background: "#2d2d44" , color: "#fff" }}
+                />
+                <button className="btn" style={{ background: "#e74c3c", color: "#fff" }}>
+                  <i className="bi bi-search" />
+                </button>
+              </div>
             </div>
-            <span className="fw-bold text-dark">MyApp</span>
-          </a>
 
-          <button className="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-            <span className="navbar-toggler-icon" />
-          </button>
-
-          <div className="collapse navbar-collapse" id="navMenu">
-            <ul className="navbar-nav mx-auto gap-1">
-              <li className="nav-item">
-                <a href="/#tính năng" className="nav-link text-dark px-3">Tính năng</a>
-              </li>
-              <li className="nav-item">
-                <a href="/#bảng giá" className="nav-link text-dark px-3">Bảng giá</a>
-              </li>
-              <li className="nav-item">
-                <Link href="/blog" className="nav-link text-dark px-3">Blog</Link>
-              </li>
-              <li className="nav-item">
-                <Link href="/contact" className="nav-link text-dark px-3">Liên hệ</Link>
-              </li>
-            </ul>
-            <div className="d-flex gap-2">
-              <Link href="/login" className="btn btn-outline-primary">Đăng nhập</Link>
-              <Link href="/register" className="btn btn-primary">Dùng thử miễn phí</Link>
+            <div className="ms-auto d-flex gap-2">
+              <Link href="/dashboard" className="btn btn-sm" style={{ background: "#e74c3c", color: "#fff" }}>
+                <i className="bi bi-person-circle me-1" />Tủ sách
+              </Link>
+              <Link href="/register" className="btn btn-sm btn-outline-light">
+                <i className="bi bi-bookmark me-1" />Theo dõi
+              </Link>
             </div>
           </div>
         </div>
-      </nav>
 
-      {/* Hero */}
-      <section className="hero-section d-flex align-items-center py-5">
-        <div className="container py-5">
-          <div className="row align-items-center">
-            <div className="col-lg-6 text-white">
-              <span className="badge bg-white bg-opacity-25 text-white mb-3 px-3 py-2">
-                <i className="bi bi-stars me-1" />Mới: Phiên bản 2.0 đã ra mắt
-              </span>
-              <h1 className="display-4 fw-bold mb-4 lh-sm">
-                Giải pháp quản lý<br />
-                <span style={{ color: "#c4b5fd" }}>toàn diện</span> cho doanh nghiệp
-              </h1>
-              <p className="lead mb-5 text-white-75" style={{ opacity: 0.85 }}>
-                Xây dựng ứng dụng web hiện đại với Next.js và Bootstrap 5.
-                Dashboard đẹp, tính năng đầy đủ, dễ tùy chỉnh.
-              </p>
-              <div className="d-flex flex-wrap gap-3">
-                <Link href="/dashboard" className="btn btn-light btn-lg px-5 fw-semibold text-primary">
-                  <i className="bi bi-play-circle me-2" />Xem demo
+        {/* Genre nav */}
+        <div style={{ background: "#e74c3c" }}>
+          <div className="container">
+            <nav className="d-flex gap-0 overflow-auto" style={{ scrollbarWidth: "none" }}>
+              <Link href="/" className="nav-link text-white fw-semibold px-3 py-2 text-nowrap"
+                style={{ background: "rgba(0,0,0,0.2)", fontSize: "0.85rem" }}>
+                <i className="bi bi-house-fill me-1" />Trang chủ
+              </Link>
+              {genres.map((g) => (
+                <Link key={g} href={`/the-loai/${encodeURIComponent(g)}`}
+                  className="nav-link text-white px-3 py-2 text-nowrap"
+                  style={{ fontSize: "0.85rem" }}>
+                  {g}
                 </Link>
-                <Link href="/register" className="btn btn-outline-light btn-lg px-5">
-                  Bắt đầu ngay →
-                </Link>
-              </div>
+              ))}
+              <Link href="/dien-dan" className="nav-link text-white px-3 py-2 text-nowrap"
+                style={{ fontSize: "0.85rem" }}>
+                <i className="bi bi-chat-dots me-1" />Diễn đàn
+              </Link>
+              <Link href="/tim-kiem" className="nav-link text-white px-3 py-2 text-nowrap ms-auto"
+                style={{ fontSize: "0.85rem" }}>
+                <i className="bi bi-search me-1" />Tìm kiếm
+              </Link>
+            </nav>
+          </div>
+        </div>
+      </header>
 
-              <div className="d-flex align-items-center gap-4 mt-5 pt-2">
-                {[
-                  { value: "10K+", label: "Người dùng" },
-                  { value: "500+", label: "Doanh nghiệp" },
-                  { value: "99.9%", label: "Uptime" },
-                ].map((stat) => (
-                  <div key={stat.label} className="text-center">
-                    <div className="fw-bold h4 mb-0 text-white">{stat.value}</div>
-                    <div className="text-white-50 small">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+      {/* ── Main ── */}
+      <div className="container py-4">
+        <div className="row g-4">
 
-            <div className="col-lg-6 mt-5 mt-lg-0">
-              <div className="card border-0 rounded-4 shadow-lg p-3" style={{ background: "rgba(255,255,255,0.95)" }}>
-                {/* Mini dashboard preview */}
-                <div className="d-flex gap-2 mb-3">
-                  <div className="rounded-circle bg-danger" style={{ width: 12, height: 12 }} />
-                  <div className="rounded-circle bg-warning" style={{ width: 12, height: 12 }} />
-                  <div className="rounded-circle bg-success" style={{ width: 12, height: 12 }} />
-                </div>
-                <div className="row g-2 mb-3">
-                  {[
-                    { label: "Doanh thu", val: "₫48.2M", icon: "bi-currency-dollar", bg: "bg-primary" },
-                    { label: "Đơn hàng", val: "3,821", icon: "bi-bag", bg: "bg-success" },
-                    { label: "Người dùng", val: "12,450", icon: "bi-people", bg: "bg-warning" },
-                  ].map((s) => (
-                    <div className="col-4" key={s.label}>
-                      <div className={`${s.bg} text-white rounded-3 p-2 text-center`}>
-                        <i className={`bi ${s.icon} d-block mb-1`} />
-                        <div className="fw-bold small">{s.val}</div>
-                        <div style={{ fontSize: "0.65rem", opacity: 0.85 }}>{s.label}</div>
+          {/* ── Left: main content ── */}
+          <div className="col-lg-8">
+
+            {/* Featured novels */}
+            <div className="mb-4">
+              <div className="row g-3">
+                {/* Big featured */}
+                <div className="col-md-6">
+                  <div className="card border-0 h-100 shadow-sm rounded-3 overflow-hidden position-relative"
+                    style={{ background: featured[0].color, minHeight: 220 }}>
+                    <div className="card-body d-flex flex-column justify-content-end p-3"
+                      style={{ background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)" }}>
+                      <span className="badge bg-danger mb-1" style={{ width: "fit-content" }}>
+                        <i className="bi bi-fire me-1" />{featured[0].badge}
+                      </span>
+                      <h5 className="fw-bold text-white mb-1">{featured[0].title}</h5>
+                      <small className="text-white-50 mb-2">{featured[0].author} · {featured[0].genre}</small>
+                      <p className="text-white small mb-2" style={{ opacity: 0.85, fontSize: "0.78rem" }}>
+                        {featured[0].desc.slice(0, 100)}...
+                      </p>
+                      <div className="d-flex gap-3">
+                        <small className="text-white-50"><i className="bi bi-journal-text me-1" />{featured[0].chapters} chương</small>
+                        <small className="text-white-50"><i className="bi bi-eye me-1" />{featured[0].views}</small>
                       </div>
                     </div>
-                  ))}
-                </div>
-                <div className="bg-light rounded-3 p-2 mb-2">
-                  <div className="d-flex align-items-center gap-2 mb-2">
-                    <div className="bg-primary rounded" style={{ width: 4, height: 16 }} />
-                    <small className="fw-medium">Biểu đồ doanh thu tuần</small>
+                    <div className="position-absolute top-0 end-0 m-3">
+                      <i className="bi bi-book-half text-white" style={{ fontSize: 60, opacity: 0.15 }} />
+                    </div>
                   </div>
-                  <div className="d-flex align-items-end gap-1" style={{ height: 60 }}>
-                    {[40, 65, 45, 80, 55, 90, 70].map((h, i) => (
-                      <div key={i} className="flex-fill bg-primary rounded-top" style={{ height: `${h}%`, opacity: 0.7 }} />
+                </div>
+
+                {/* Small featured */}
+                <div className="col-md-6">
+                  <div className="d-flex flex-column gap-3 h-100">
+                    {featured.slice(1).map((f) => (
+                      <div key={f.title} className="card border-0 shadow-sm rounded-3 overflow-hidden flex-fill"
+                        style={{ background: f.color }}>
+                        <div className="card-body d-flex flex-column justify-content-end p-3"
+                          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)" }}>
+                          <span className="badge bg-primary mb-1" style={{ width: "fit-content", fontSize: "0.7rem" }}>
+                            {f.badge}
+                          </span>
+                          <div className="fw-semibold text-white" style={{ fontSize: "0.9rem" }}>{f.title}</div>
+                          <small className="text-white-50" style={{ fontSize: "0.75rem" }}>{f.author} · {f.chapters} chương</small>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Features */}
-      <section id="tính năng" className="py-5 bg-white">
-        <div className="container py-4">
-          <div className="text-center mb-5">
-            <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3">Tính năng</span>
-            <h2 className="fw-bold display-6">Mọi thứ bạn cần trong một nơi</h2>
-            <p className="text-muted col-lg-6 mx-auto">
-              Bộ template hoàn chỉnh với các trang và component thường dùng nhất
-            </p>
-          </div>
-          <div className="row g-4">
-            {features.map((f) => (
-              <div className="col-md-6 col-lg-4" key={f.title}>
-                <div className="p-4 h-100 rounded-4 border hover-card" style={{ transition: "all 0.2s" }}>
-                  <div className="bg-primary bg-opacity-10 text-primary rounded-3 d-inline-flex align-items-center justify-content-center mb-3"
-                    style={{ width: 48, height: 48 }}>
-                    <i className={`bi ${f.icon} fs-4`} />
-                  </div>
-                  <h5 className="fw-semibold mb-2">{f.title}</h5>
-                  <p className="text-muted small mb-0">{f.desc}</p>
-                </div>
+            {/* Hot novels */}
+            <div className="mb-4">
+              <div className="d-flex align-items-center justify-content-between mb-3">
+                <h6 className="fw-bold mb-0 d-flex align-items-center gap-2">
+                  <span style={{ width: 4, height: 18, background: "#e74c3c", borderRadius: 2, display: "inline-block" }} />
+                  <i className="bi bi-fire text-danger me-1" />Truyện Hot
+                </h6>
+                <Link href="/blog" className="text-decoration-none small" style={{ color: "#e74c3c" }}>
+                  Xem tất cả <i className="bi bi-chevron-right" />
+                </Link>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Pricing */}
-      <section id="bảng giá" className="py-5 bg-light">
-        <div className="container py-4">
-          <div className="text-center mb-5">
-            <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3">Bảng giá</span>
-            <h2 className="fw-bold display-6">Giá cả minh bạch</h2>
-            <p className="text-muted">Chọn gói phù hợp với nhu cầu của bạn</p>
-          </div>
-          <div className="row g-4 justify-content-center">
-            {pricing.map((plan) => (
-              <div className="col-md-6 col-lg-4" key={plan.name}>
-                <div className={`card h-100 border-0 rounded-4 shadow-sm ${plan.popular ? "border border-primary border-2" : ""}`}>
-                  {plan.popular && (
-                    <div className="card-header bg-primary text-white text-center border-0 rounded-top-4 py-2">
-                      <small className="fw-semibold"><i className="bi bi-star-fill me-1" />Phổ biến nhất</small>
-                    </div>
-                  )}
-                  <div className="card-body p-4">
-                    <h5 className="fw-bold mb-1">{plan.name}</h5>
-                    <p className="text-muted small mb-3">{plan.desc}</p>
-                    <div className="mb-4">
-                      <span className="display-6 fw-bold">{plan.price}</span>
-                      {plan.period && <span className="text-muted">{plan.period}</span>}
-                    </div>
-                    <ul className="list-unstyled mb-4">
-                      {plan.features.map((f) => (
-                        <li key={f} className="d-flex align-items-center gap-2 mb-2">
-                          <i className="bi bi-check-circle-fill text-success" />
-                          <span className="small">{f}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Link href="/register" className={`btn ${plan.btnClass} w-100`}>
-                      Bắt đầu ngay
+              <div className="row g-2">
+                {hotNovels.map((n) => (
+                  <div key={n.title} className="col-6 col-md-3">
+                    <Link href={`/truyen/${encodeURIComponent(n.title)}`} className="text-decoration-none">
+                      <div className="card border-0 shadow-sm rounded-3 h-100 hover-card" style={{ transition: "transform 0.15s" }}>
+                        <div className="rounded-top-3 d-flex align-items-center justify-content-center"
+                          style={{ height: 120, background: n.color }}>
+                          <i className="bi bi-book-half text-white" style={{ fontSize: 36, opacity: 0.8 }} />
+                        </div>
+                        <div className="card-body p-2">
+                          <div className="fw-semibold text-dark small text-truncate">{n.title}</div>
+                          <div className="text-muted" style={{ fontSize: "0.72rem" }}>{n.author}</div>
+                          <div className="d-flex justify-content-between align-items-center mt-1">
+                            <span className="badge rounded-pill"
+                              style={{ background: "#f0f0f0", color: "#555", fontSize: "0.65rem" }}>
+                              {n.genre}
+                            </span>
+                            <span className={`badge ${n.status === "Hoàn" ? "bg-success" : "bg-warning text-dark"}`}
+                              style={{ fontSize: "0.65rem" }}>
+                              {n.status}
+                            </span>
+                          </div>
+                          <div className="text-muted mt-1" style={{ fontSize: "0.7rem" }}>
+                            <i className="bi bi-journal-text me-1" />{n.chapters.toLocaleString()} chương
+                          </div>
+                        </div>
+                      </div>
                     </Link>
                   </div>
+                ))}
+              </div>
+            </div>
+
+            {/* New updates */}
+            <div className="mb-4">
+              <div className="d-flex align-items-center justify-content-between mb-3">
+                <h6 className="fw-bold mb-0 d-flex align-items-center gap-2">
+                  <span style={{ width: 4, height: 18, background: "#e74c3c", borderRadius: 2, display: "inline-block" }} />
+                  <i className="bi bi-clock-history text-primary me-1" />Mới Cập Nhật
+                </h6>
+                <Link href="/blog" className="text-decoration-none small" style={{ color: "#e74c3c" }}>
+                  Xem tất cả <i className="bi bi-chevron-right" />
+                </Link>
+              </div>
+
+              <div className="card border-0 shadow-sm rounded-3">
+                <div className="card-body p-0">
+                  {newUpdates.map((n, i) => (
+                    <div key={n.title}
+                      className={`d-flex align-items-center gap-3 px-3 py-2 ${i < newUpdates.length - 1 ? "border-bottom" : ""}`}
+                      style={{ transition: "background 0.1s", cursor: "pointer" }}>
+                      <span className="text-muted fw-bold" style={{ width: 20, fontSize: "0.8rem", textAlign: "center" }}>{i + 1}</span>
+                      <div className="flex-fill min-w-0">
+                        <div className="d-flex align-items-center gap-2">
+                          <Link href={`/truyen/${encodeURIComponent(n.title)}`}
+                            className="text-decoration-none text-dark fw-semibold text-truncate small"
+                            style={{ maxWidth: 220 }}>
+                            {n.title}
+                          </Link>
+                          <span className="badge bg-primary" style={{ fontSize: "0.65rem", flexShrink: 0 }}>
+                            {n.chapter}
+                          </span>
+                        </div>
+                        <div className="text-muted" style={{ fontSize: "0.72rem" }}>{n.author}</div>
+                      </div>
+                      <small className="text-muted text-nowrap" style={{ fontSize: "0.7rem" }}>
+                        <i className="bi bi-clock me-1" />{n.time}
+                      </small>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            </div>
+
+            {/* Completed novels */}
+            <div>
+              <div className="d-flex align-items-center justify-content-between mb-3">
+                <h6 className="fw-bold mb-0 d-flex align-items-center gap-2">
+                  <span style={{ width: 4, height: 18, background: "#e74c3c", borderRadius: 2, display: "inline-block" }} />
+                  <i className="bi bi-check-circle text-success me-1" />Truyện Đã Hoàn
+                </h6>
+                <Link href="/blog" className="text-decoration-none small" style={{ color: "#e74c3c" }}>
+                  Xem tất cả <i className="bi bi-chevron-right" />
+                </Link>
+              </div>
+              <div className="row g-2">
+                {hotNovels.filter(n => n.status === "Hoàn").map((n) => (
+                  <div key={n.title} className="col-md-6">
+                    <Link href={`/truyen/${encodeURIComponent(n.title)}`} className="text-decoration-none">
+                      <div className="card border-0 shadow-sm rounded-3 hover-card" style={{ transition: "transform 0.15s" }}>
+                        <div className="card-body d-flex gap-3 p-3">
+                          <NovelCover color={n.color} size={52} />
+                          <div className="flex-fill min-w-0">
+                            <div className="fw-semibold text-dark small text-truncate">{n.title}</div>
+                            <div className="text-muted" style={{ fontSize: "0.72rem" }}>{n.author}</div>
+                            <div className="d-flex gap-2 mt-1">
+                              <span className="badge bg-success" style={{ fontSize: "0.65rem" }}>Hoàn</span>
+                              <span className="text-muted" style={{ fontSize: "0.7rem" }}>
+                                <i className="bi bi-eye me-1" />{n.views}
+                              </span>
+                              <span className="text-muted" style={{ fontSize: "0.7rem" }}>
+                                <i className="bi bi-journal-text me-1" />{n.chapters.toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Right: sidebar ── */}
+          <div className="col-lg-4">
+
+            {/* Ranking */}
+            <div className="card border-0 shadow-sm rounded-3 mb-4">
+              <div className="card-header border-0 pb-0 pt-3 px-3" style={{ background: "transparent" }}>
+                <div className="d-flex gap-0 border-bottom">
+                  <button className="btn btn-sm border-0 border-bottom border-danger border-2 rounded-0 fw-semibold px-3 pb-2"
+                    style={{ color: "#e74c3c", fontSize: "0.82rem" }}>
+                    <i className="bi bi-trophy me-1" />Ngày
+                  </button>
+                  <button className="btn btn-sm border-0 text-muted rounded-0 px-3 pb-2"
+                    style={{ fontSize: "0.82rem" }}>Tuần</button>
+                  <button className="btn btn-sm border-0 text-muted rounded-0 px-3 pb-2"
+                    style={{ fontSize: "0.82rem" }}>Tháng</button>
+                </div>
+              </div>
+              <div className="card-body p-0 pt-2">
+                {rankings.daily.map((r, i) => (
+                  <div key={r.title} className="d-flex align-items-center gap-2 px-3 py-2 border-bottom">
+                    <div className="fw-bold text-center flex-shrink-0"
+                      style={{
+                        width: 24, height: 24, fontSize: "0.75rem",
+                        background: i < 3 ? ["#e74c3c", "#e67e22", "#f39c12"][i] : "#e0e0e0",
+                        color: i < 3 ? "#fff" : "#666",
+                        borderRadius: "50%", lineHeight: "24px"
+                      }}>
+                      {i + 1}
+                    </div>
+                    <div className="flex-fill min-w-0">
+                      <div className="fw-semibold text-truncate" style={{ fontSize: "0.82rem" }}>{r.title}</div>
+                      <div className="text-muted" style={{ fontSize: "0.7rem" }}>{r.author}</div>
+                    </div>
+                    <small className="text-muted text-nowrap" style={{ fontSize: "0.7rem" }}>
+                      <i className="bi bi-eye me-1" />{r.views}
+                    </small>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Categories */}
+            <div className="card border-0 shadow-sm rounded-3 mb-4">
+              <div className="card-header border-0 px-3 pt-3 pb-2" style={{ background: "transparent" }}>
+                <h6 className="fw-bold mb-0 d-flex align-items-center gap-2">
+                  <span style={{ width: 4, height: 16, background: "#e74c3c", borderRadius: 2, display: "inline-block" }} />
+                  Thể Loại
+                </h6>
+              </div>
+              <div className="card-body px-3 pt-0 pb-2">
+                <div className="row g-1">
+                  {categoryList.map((c) => (
+                    <div key={c.name} className="col-6">
+                      <Link href={`/the-loai/${encodeURIComponent(c.name)}`}
+                        className="text-decoration-none d-flex align-items-center gap-2 py-2 px-2 rounded-2">
+                        <i className={`bi ${c.icon} text-muted`} style={{ fontSize: "0.85rem" }} />
+                        <span className="text-dark small flex-fill">{c.name}</span>
+                        <span className="text-muted" style={{ fontSize: "0.7rem" }}>{c.count.toLocaleString()}</span>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Quick stats */}
+            <div className="card border-0 shadow-sm rounded-3">
+              <div className="card-body p-3">
+                <h6 className="fw-bold mb-3 d-flex align-items-center gap-2">
+                  <span style={{ width: 4, height: 16, background: "#e74c3c", borderRadius: 2, display: "inline-block" }} />
+                  Thống Kê
+                </h6>
+                {[
+                  { icon: "bi-book", label: "Tổng số truyện", value: "95,420", color: "#6366f1" },
+                  { icon: "bi-journal-text", label: "Tổng số chương", value: "12,340,000", color: "#0891b2" },
+                  { icon: "bi-people", label: "Thành viên", value: "2,100,000", color: "#16a34a" },
+                  { icon: "bi-eye", label: "Lượt đọc hôm nay", value: "8,400,000", color: "#e74c3c" },
+                ].map((s) => (
+                  <div key={s.label} className="d-flex align-items-center gap-3 mb-3">
+                    <div className="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                      style={{ width: 36, height: 36, background: s.color + "20" }}>
+                      <i className={`bi ${s.icon}`} style={{ color: s.color }} />
+                    </div>
+                    <div>
+                      <div className="fw-bold" style={{ fontSize: "0.9rem" }}>{s.value}</div>
+                      <div className="text-muted" style={{ fontSize: "0.72rem" }}>{s.label}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* CTA */}
-      <section className="py-5" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
-        <div className="container py-4 text-center text-white">
-          <h2 className="fw-bold display-6 mb-3">Sẵn sàng bắt đầu?</h2>
-          <p className="mb-4 text-white-75" style={{ opacity: 0.85 }}>
-            Dùng thử miễn phí 14 ngày, không cần thẻ tín dụng
-          </p>
-          <Link href="/register" className="btn btn-light btn-lg px-5 fw-semibold text-primary me-3">
-            Tạo tài khoản miễn phí
-          </Link>
-          <Link href="/login" className="btn btn-outline-light btn-lg px-5">
-            Đăng nhập
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-dark text-white py-5">
-        <div className="container">
+      {/* ── Footer ── */}
+      <footer style={{ background: "#1a1a2e", borderTop: "2px solid #e74c3c" }} className="mt-4">
+        <div className="container py-4">
           <div className="row g-4 mb-4">
-            <div className="col-lg-4">
+            <div className="col-md-4">
               <div className="d-flex align-items-center gap-2 mb-3">
-                <div className="bg-primary rounded-2 d-flex align-items-center justify-content-center"
-                  style={{ width: 34, height: 34 }}>
-                  <i className="bi bi-lightning-fill text-white" />
+                <div className="d-flex align-items-center justify-content-center rounded-2"
+                  style={{ width: 36, height: 36, background: "#e74c3c" }}>
+                  <i className="bi bi-book-fill text-white" />
                 </div>
-                <span className="fw-bold fs-5">MyApp</span>
+                <span className="fw-bold text-white fs-5">TruyệnHay</span>
               </div>
-              <p className="text-secondary small">
-                Giải pháp quản lý toàn diện cho doanh nghiệp hiện đại.
+              <p className="text-secondary small mb-3">
+                Kho truyện chữ online lớn nhất Việt Nam. Đọc truyện tiên hiệp, ngôn tình, kiếm hiệp... miễn phí, cập nhật nhanh nhất.
               </p>
+              <div className="d-flex gap-2">
+                {["bi-facebook", "bi-twitter-x", "bi-discord", "bi-tiktok"].map((ic) => (
+                  <a key={ic} href="#"
+                    className="d-flex align-items-center justify-content-center rounded-circle text-white"
+                    style={{ width: 32, height: 32, background: "rgba(255,255,255,0.1)", fontSize: "0.9rem" }}>
+                    <i className={`bi ${ic}`} />
+                  </a>
+                ))}
+              </div>
             </div>
+
             {[
-              { title: "Sản phẩm", links: [{ l: "Tính năng", h: "/#tính năng" }, { l: "Bảng giá", h: "/#bảng giá" }, { l: "Changelog", h: "#" }, { l: "Roadmap", h: "#" }] },
-              { title: "Công ty", links: [{ l: "Về chúng tôi", h: "#" }, { l: "Blog", h: "/blog" }, { l: "Tuyển dụng", h: "#" }, { l: "Liên hệ", h: "/contact" }] },
+              {
+                title: "Thể loại phổ biến",
+                links: ["Tiên Hiệp", "Kiếm Hiệp", "Ngôn Tình", "Đô Thị", "Huyền Huyễn"],
+              },
+              {
+                title: "Hỗ trợ",
+                links: ["Về chúng tôi", "Chính sách", "Báo lỗi", "Liên hệ", "Tuyển dụng"],
+              },
             ].map((col) => (
-              <div className="col-6 col-lg-2" key={col.title}>
-                <h6 className="fw-semibold mb-3">{col.title}</h6>
-                <ul className="list-unstyled">
-                  {col.links.map((link) => (
-                    <li key={link.l} className="mb-2">
-                      <Link href={link.h} className="text-secondary text-decoration-none small">{link.l}</Link>
+              <div key={col.title} className="col-6 col-md-2">
+                <h6 className="fw-semibold text-white mb-3" style={{ fontSize: "0.85rem" }}>{col.title}</h6>
+                <ul className="list-unstyled mb-0">
+                  {col.links.map((l) => (
+                    <li key={l} className="mb-2">
+                      <Link href="/blog" className="text-secondary text-decoration-none" style={{ fontSize: "0.82rem" }}>
+                        {l}
+                      </Link>
                     </li>
                   ))}
                 </ul>
               </div>
             ))}
+
+            <div className="col-md-3">
+              <h6 className="fw-semibold text-white mb-3" style={{ fontSize: "0.85rem" }}>
+                <i className="bi bi-bell me-1" />Nhận thông báo
+              </h6>
+              <p className="text-secondary small mb-2">Đăng ký để nhận thông báo truyện mới cập nhật mỗi ngày.</p>
+              <div className="input-group input-group-sm">
+                <input type="email" className="form-control border-0"
+                  placeholder="Email của bạn..."
+                  style={{ background: "rgba(255,255,255,0.1)", color: "#fff" }} />
+                <button className="btn btn-sm" style={{ background: "#e74c3c", color: "#fff" }}>
+                  Đăng ký
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="border-top border-secondary pt-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <small className="text-secondary">© 2024 MyApp. All rights reserved.</small>
+
+          <div className="border-top pt-3 d-flex flex-wrap justify-content-between align-items-center gap-2"
+            style={{ borderColor: "rgba(255,255,255,0.1) !important" }}>
+            <small className="text-secondary">© 2024 TruyệnHay. All rights reserved.</small>
             <div className="d-flex gap-3">
-              {["bi-twitter-x", "bi-github", "bi-linkedin", "bi-facebook"].map((icon) => (
-                <a key={icon} href="#" className="text-secondary fs-5">
-                  <i className={`bi ${icon}`} />
-                </a>
-              ))}
+              <Link href="#" className="text-secondary text-decoration-none small">Điều khoản</Link>
+              <Link href="#" className="text-secondary text-decoration-none small">Bảo mật</Link>
+              <Link href="/contact" className="text-secondary text-decoration-none small">Liên hệ</Link>
             </div>
           </div>
         </div>
