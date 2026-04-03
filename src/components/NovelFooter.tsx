@@ -1,6 +1,19 @@
 import Link from "next/link";
+import { API_BASE_URL } from "@/lib/api";
 
-export default function NovelFooter() {
+async function getFooterCats() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/categories`, { next: { revalidate: 60 } });
+    const data = await res.json();
+    return data.slice(0, 5);
+  } catch (error) {
+    console.error("Error fetching footer categories:", error);
+    return [];
+  }
+}
+
+export default async function NovelFooter() {
+  const categories = await getFooterCats();
   return (
     <footer style={{ background: "#1a1a2e", borderTop: "2px solid #e74c3c" }} className="mt-5">
       <div className="container py-4">
@@ -30,11 +43,11 @@ export default function NovelFooter() {
           <div className="col-6 col-md-2">
             <h6 className="fw-semibold text-white mb-3" style={{ fontSize: "0.85rem" }}>Thể loại</h6>
             <ul className="list-unstyled mb-0">
-              {["Tiên Hiệp", "Kiếm Hiệp", "Ngôn Tình", "Đô Thị", "Huyền Huyễn"].map((l) => (
-                <li key={l} className="mb-2">
-                  <Link href={`/the-loai/${encodeURIComponent(l)}`}
+              {categories.map((l: any) => (
+                <li key={l.name} className="mb-2">
+                  <Link href={`/the-loai/${encodeURIComponent(l.name)}`}
                     className="text-secondary text-decoration-none" style={{ fontSize: "0.82rem" }}>
-                    {l}
+                    {l.name}
                   </Link>
                 </li>
               ))}

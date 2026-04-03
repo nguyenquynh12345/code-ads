@@ -1,11 +1,28 @@
 import Link from "next/link";
+import { API_BASE_URL } from "@/lib/api";
 
-const genres = [
-  "Tiên Hiệp", "Kiếm Hiệp", "Ngôn Tình", "Đô Thị", "Huyền Huyễn",
-  "Dị Giới", "Võng Du", "Trinh Thám", "Lịch Sử", "Xuyên Không",
-];
+async function getMenuItems() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/menus`, { next: { revalidate: 60 } });
+    const data = await res.json();
+    if (data.length > 0) return data;
+    
+    // Fallback to categories if no menu items
+    const catRes = await fetch(`${API_BASE_URL}/categories`, { next: { revalidate: 60 } });
+    const cats = await catRes.json();
+    return cats.map((c: any) => ({
+      title: c.name,
+      url: `/the-loai/${encodeURIComponent(c.name)}`,
+      icon: c.icon
+    }));
+  } catch (error) {
+    console.error("Error fetching menu items:", error);
+    return [];
+  }
+}
 
-export default function NovelHeader() {
+export default async function NovelHeader() {
+  const menus = await getMenuItems();
   return (
     <header style={{ background: "#1a1a2e" }}>
       {/* Topbar */}
@@ -71,11 +88,12 @@ export default function NovelHeader() {
               style={{ fontSize: "0.85rem" }}>
               <i className="bi bi-house-fill me-1" />Trang chủ
             </Link>
-            {genres.map((g) => (
-              <Link key={g} href={`/the-loai/${encodeURIComponent(g)}`}
+            {menus.map((m: any) => (
+              <Link key={m.title} href={m.url}
                 className="nav-link text-white px-3 py-2 text-nowrap"
                 style={{ fontSize: "0.85rem" }}>
-                {g}
+                {m.icon && <i className={`bi ${m.icon} me-1`} />}
+                {m.title}
               </Link>
             ))}
             <Link href="/dien-dan" className="nav-link text-white px-3 py-2 text-nowrap"

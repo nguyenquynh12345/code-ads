@@ -1,92 +1,40 @@
 import Link from "next/link";
+import { API_BASE_URL } from "@/lib/api";
 
-const genres = [
-  "Tiên Hiệp", "Kiếm Hiệp", "Ngôn Tình", "Đô Thị", "Huyền Huyễn",
-  "Dị Giới", "Võng Du", "Trinh Thám", "Lịch Sử", "Xuyên Không",
-];
+async function getData() {
+  try {
+    const [featuredRes, hotRes, newRes, rankingRes, categoriesRes, menusRes] = await Promise.all([
+      fetch(`${API_BASE_URL}/posts/featured`, { next: { revalidate: 60 } }),
+      fetch(`${API_BASE_URL}/posts/hot`, { next: { revalidate: 60 } }),
+      fetch(`${API_BASE_URL}/posts/new-updates`, { next: { revalidate: 60 } }),
+      fetch(`${API_BASE_URL}/posts/rankings`, { next: { revalidate: 60 } }),
+      fetch(`${API_BASE_URL}/categories`, { next: { revalidate: 60 } }),
+      fetch(`${API_BASE_URL}/menus`, { next: { revalidate: 60 } }),
+    ]);
 
-const featured = [
-  {
-    title: "Đấu Phá Thương Khung",
-    author: "Thiên Tàm Thổ Đậu",
-    genre: "Tiên Hiệp",
-    chapters: 1648,
-    views: "125M",
-    desc: "Tại đại lục Đấu Khí, không có ma pháp, chỉ có đấu khí. Tiêu Viêm từ một thiên tài năm xưa bỗng trở thành phế vật, con đường trở lại đỉnh cao đầy gian nan và thử thách...",
-    color: "#6366f1",
-    badge: "Hot",
-  },
-  {
-    title: "Tru Tiên",
-    author: "Tiêu Đỉnh",
-    genre: "Kiếm Hiệp",
-    chapters: 347,
-    views: "89M",
-    desc: "Trương Tiểu Phàm một lần tình cờ học được bí kíp tà đạo Quỷ Vương, từ đó bước vào con đường tu tiên đầy biến cố, giữa thiện và ác, giữa tình và nghĩa...",
-    color: "#0891b2",
-    badge: "Classic",
-  },
-  {
-    title: "Võ Luyện Đỉnh Phong",
-    author: "Mạc Mặc Thực Thần Dương",
-    genre: "Huyền Huyễn",
-    chapters: 3462,
-    views: "210M",
-    desc: "Dương Khai tình cờ nhận được một viên đá hắc sắc kỳ lạ, từ đó bước vào con đường tu luyện không ngừng, chinh phục thiên hà, đứng trên đỉnh võ đạo...",
-    color: "#dc2626",
-    badge: "Top 1",
-  },
-];
+    const featured = await featuredRes.json();
+    const hotNovels = await hotRes.json();
+    const newUpdates = await newRes.json();
+    const rankings = await rankingRes.json();
+    const categoryList = await categoriesRes.json();
+    const menus = await menusRes.json();
 
-const hotNovels = [
-  { title: "Toàn Chức Pháp Sư", author: "Loạn", genre: "Huyền Huyễn", chapters: 2892, views: "98M", color: "#7c3aed", status: "Đang ra" },
-  { title: "Thần Mộ", author: "Thần Đông", genre: "Tiên Hiệp", chapters: 1200, views: "67M", color: "#0f766e", status: "Hoàn" },
-  { title: "Đế Bá", author: "Tiểu Thái Lang", genre: "Dị Giới", chapters: 2100, views: "54M", color: "#b45309", status: "Đang ra" },
-  { title: "Phàm Nhân Tu Tiên", author: "Vong Ngữ", genre: "Tiên Hiệp", chapters: 2348, views: "145M", color: "#065f46", status: "Hoàn" },
-  { title: "Tinh Thần Biến", author: "Ngã Cật Tây Hồng Thị", genre: "Huyền Huyễn", chapters: 3100, views: "88M", color: "#1d4ed8", status: "Đang ra" },
-  { title: "Ngũ Hành Thiên", author: "Canh Tân Tắc Cải", genre: "Kiếm Hiệp", chapters: 870, views: "32M", color: "#7e22ce", status: "Hoàn" },
-  { title: "Hồng Hoang Chi Thuỷ Đại Vũ Trụ", author: "Bạch Trạch", genre: "Lịch Sử", chapters: 420, views: "18M", color: "#be185d", status: "Đang ra" },
-  { title: "Long Vương Truyền Thuyết", author: "Thiên Hạ Bá Xướng", genre: "Đô Thị", chapters: 5300, views: "312M", color: "#c2410c", status: "Hoàn" },
-];
+    return { 
+      featured: featured.length > 0 ? featured : null, 
+      hotNovels: hotNovels.length > 0 ? hotNovels : null, 
+      newUpdates: newUpdates.length > 0 ? newUpdates : null, 
+      rankings: rankings.length > 0 ? { daily: rankings } : null,
+      categoryList: categoryList.length > 0 ? categoryList : null,
+      menus: menus.length > 0 ? menus : null
+    };
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return { featured: null, hotNovels: null, newUpdates: null, rankings: null, categoryList: null, menus: null };
+  }
+}
 
-const newUpdates = [
-  { title: "Trọng Sinh Chi Đô Thị Tu Tiên", chapter: "Chương 312", time: "5 phút trước", author: "Mộng Nhập Thần Cơ" },
-  { title: "Hào Môn Tiểu Lão Bà", chapter: "Chương 88", time: "12 phút trước", author: "Liễu Tiểu Tiểu" },
-  { title: "Tiên Vương귀 Hồi Quy", chapter: "Chương 1204", time: "20 phút trước", author: "Phong Lưu Thư Đãi" },
-  { title: "Toàn Cầu Cao Võ", chapter: "Chương 567", time: "35 phút trước", author: "Đại Lực Kim Cang Chỉ" },
-  { title: "Bất Hủ Võ Thánh", chapter: "Chương 2301", time: "1 giờ trước", author: "Thần Kiếm Thiên Tôn" },
-  { title: "Hệ Thống Vô Địch", chapter: "Chương 445", time: "1 giờ trước", author: "Lão Lão Thật Thật" },
-  { title: "Nữ Đế Phong Lưu", chapter: "Chương 190", time: "2 giờ trước", author: "Nhất Lạp Tiểu Thuỷ" },
-  { title: "Siêu Cấp Chiến Binh", chapter: "Chương 789", time: "2 giờ trước", author: "Mặc Vũ Tiêu Tiêu" },
-  { title: "Dị Giới Đế Vương", chapter: "Chương 3210", time: "3 giờ trước", author: "Cửu Thiên Huyết Long" },
-  { title: "Nghịch Thiên Chí Tôn", chapter: "Chương 1567", time: "3 giờ trước", author: "Thiên Cơ Lão Nhân" },
-];
-
-const rankings = {
-  daily: [
-    { title: "Long Vương Truyền Thuyết", author: "Thiên Hạ Bá Xướng", views: "1.2M" },
-    { title: "Võ Luyện Đỉnh Phong", author: "Mạc Mặc Thực Thần Dương", views: "980K" },
-    { title: "Toàn Chức Pháp Sư", author: "Loạn", views: "876K" },
-    { title: "Phàm Nhân Tu Tiên", author: "Vong Ngữ", views: "754K" },
-    { title: "Đấu Phá Thương Khung", author: "Thiên Tàm Thổ Đậu", views: "698K" },
-    { title: "Tinh Thần Biến", author: "Ngã Cật Tây Hồng Thị", views: "612K" },
-    { title: "Thần Mộ", author: "Thần Đông", views: "543K" },
-    { title: "Tru Tiên", author: "Tiêu Đỉnh", views: "487K" },
-  ],
-};
-
-const categoryList = [
-  { name: "Tiên Hiệp", count: 12430, icon: "bi-stars" },
-  { name: "Kiếm Hiệp", count: 8920, icon: "bi-shield" },
-  { name: "Ngôn Tình", count: 15670, icon: "bi-heart" },
-  { name: "Đô Thị", count: 21340, icon: "bi-building" },
-  { name: "Huyền Huyễn", count: 9870, icon: "bi-magic" },
-  { name: "Dị Giới", count: 7650, icon: "bi-globe" },
-  { name: "Võng Du", count: 5430, icon: "bi-controller" },
-  { name: "Xuyên Không", count: 6780, icon: "bi-clock-history" },
-  { name: "Trinh Thám", count: 3210, icon: "bi-search" },
-  { name: "Lịch Sử", count: 4560, icon: "bi-book" },
-];
+import NovelHeader from "@/components/NovelHeader";
+import NovelFooter from "@/components/NovelFooter";
 
 function NovelCover({ color, icon = "bi-book-half", size = 80 }: { color: string; icon?: string; size?: number }) {
   return (
@@ -99,97 +47,55 @@ function NovelCover({ color, icon = "bi-book-half", size = 80 }: { color: string
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const data = await getData();
+
+  const genres = data.menus 
+    ? data.menus.map((m: any) => m.title) 
+    : ["Tiên Hiệp", "Kiếm Hiệp", "Ngôn Tình", "Đô Thị", "Huyền Huyễn", "Dị Giới", "Võng Du", "Trinh Thám", "Lịch Sử", "Xuyên Không"];
+
+  const featuredData = data.featured || [
+    {
+      title: "Đấu Phá Thương Khung",
+      author: { username: "Thiên Tàm Thổ Đậu" },
+      category: { name: "Tiên Hiệp" },
+      chapters: 1648,
+      views: 125000000,
+      description: "Tại đại lục Đấu Khí, không có ma pháp, chỉ có đấu khí...",
+      color: "#6366f1",
+      badge: "Hot",
+    }
+  ];
+
+  const hotNovelsData = data.hotNovels || [
+    { title: "Toàn Chức Pháp Sư", author: { username: "Loạn" }, category: { name: "Huyền Huyễn" }, chapters: 2892, views: 98000000, color: "#7c3aed", status: "Đang ra" },
+  ];
+
+  const newUpdatesData = data.newUpdates?.map((n: any) => ({
+    title: n.title,
+    chapter: `Chương ${n.chapters}`,
+    time: "vừa xong",
+    author: n.author?.username || "Ẩn danh"
+  })) || [
+    { title: "Trọng Sinh Chi Đô Thị Tu Tiên", chapter: "Chương 312", time: "5 phút trước", author: "Mộng Nhập Thần Cơ" },
+  ];
+
+  const rankingsData = data.rankings || {
+    daily: [
+      { title: "Long Vương Truyền Thuyết", author: { username: "Thiên Hạ Bá Xướng" }, views: 1200000 },
+    ],
+  };
+
+  const categoryListData = data.categoryList?.map((c: any) => ({
+    name: c.name,
+    count: c.postCount || 0,
+    icon: c.icon || "bi-book"
+  })) || [
+    { name: "Tiên Hiệp", count: 12430, icon: "bi-stars" },
+  ];
   return (
     <div style={{ background: "#f5f5f0", minHeight: "100vh" }}>
-
-      {/* ── Topbar ── */}
-      <div style={{ background: "#1a1a2e", borderBottom: "2px solid #e74c3c" }}>
-        <div className="container d-flex justify-content-between align-items-center py-1">
-          <small className="text-white-50">
-            <i className="bi bi-lightning-fill text-warning me-1" />
-            Đọc truyện online miễn phí, cập nhật nhanh nhất
-          </small>
-          <div className="d-flex gap-3">
-            <Link href="/login" className="text-white-50 text-decoration-none small">
-              <i className="bi bi-person me-1" />Đăng nhập
-            </Link>
-            <Link href="/register" className="text-white-50 text-decoration-none small">
-              <i className="bi bi-person-plus me-1" />Đăng ký
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Header ── */}
-      <header style={{ background: "#1a1a2e" }} className="pb-0">
-        <div className="container py-3">
-          <div className="d-flex align-items-center gap-4 flex-wrap">
-            {/* Logo */}
-            <Link href="/" className="text-decoration-none d-flex align-items-center gap-2">
-              <div className="d-flex align-items-center justify-content-center rounded-2"
-                style={{ width: 40, height: 40, background: "#e74c3c" }}>
-                <i className="bi bi-book-fill text-white fs-5" />
-              </div>
-              <div>
-                <div className="fw-bold text-white fs-5 lh-1">TruyệnHay</div>
-                <div style={{ fontSize: "0.65rem", color: "#aaa" }}>Kho truyện triệu chương</div>
-              </div>
-            </Link>
-
-            {/* Search */}
-            <div className="flex-fill" style={{ maxWidth: 520 }}>
-              <div className="input-group">
-                <input
-                  type="text"
-                  className="form-control border-0"
-                  placeholder="Tìm kiếm truyện, tác giả..."
-                  style={{ background: "#2d2d44" , color: "#fff" }}
-                />
-                <button className="btn" style={{ background: "#e74c3c", color: "#fff" }}>
-                  <i className="bi bi-search" />
-                </button>
-              </div>
-            </div>
-
-            <div className="ms-auto d-flex gap-2">
-              <Link href="/dashboard" className="btn btn-sm" style={{ background: "#e74c3c", color: "#fff" }}>
-                <i className="bi bi-person-circle me-1" />Tủ sách
-              </Link>
-              <Link href="/register" className="btn btn-sm btn-outline-light">
-                <i className="bi bi-bookmark me-1" />Theo dõi
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Genre nav */}
-        <div style={{ background: "#e74c3c" }}>
-          <div className="container">
-            <nav className="d-flex gap-0 overflow-auto" style={{ scrollbarWidth: "none" }}>
-              <Link href="/" className="nav-link text-white fw-semibold px-3 py-2 text-nowrap"
-                style={{ background: "rgba(0,0,0,0.2)", fontSize: "0.85rem" }}>
-                <i className="bi bi-house-fill me-1" />Trang chủ
-              </Link>
-              {genres.map((g) => (
-                <Link key={g} href={`/the-loai/${encodeURIComponent(g)}`}
-                  className="nav-link text-white px-3 py-2 text-nowrap"
-                  style={{ fontSize: "0.85rem" }}>
-                  {g}
-                </Link>
-              ))}
-              <Link href="/dien-dan" className="nav-link text-white px-3 py-2 text-nowrap"
-                style={{ fontSize: "0.85rem" }}>
-                <i className="bi bi-chat-dots me-1" />Diễn đàn
-              </Link>
-              <Link href="/tim-kiem" className="nav-link text-white px-3 py-2 text-nowrap ms-auto"
-                style={{ fontSize: "0.85rem" }}>
-                <i className="bi bi-search me-1" />Tìm kiếm
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <NovelHeader />
 
       {/* ── Main ── */}
       <div className="container py-4">
@@ -204,20 +110,20 @@ export default function Home() {
                 {/* Big featured */}
                 <div className="col-md-6">
                   <div className="card border-0 h-100 shadow-sm rounded-3 overflow-hidden position-relative"
-                    style={{ background: featured[0].color, minHeight: 220 }}>
+                    style={{ background: featuredData[0].color || "#6366f1", minHeight: 220 }}>
                     <div className="card-body d-flex flex-column justify-content-end p-3"
                       style={{ background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)" }}>
                       <span className="badge bg-danger mb-1" style={{ width: "fit-content" }}>
-                        <i className="bi bi-fire me-1" />{featured[0].badge}
+                        <i className="bi bi-fire me-1" />{featuredData[0].badge || "Hot"}
                       </span>
-                      <h5 className="fw-bold text-white mb-1">{featured[0].title}</h5>
-                      <small className="text-white-50 mb-2">{featured[0].author} · {featured[0].genre}</small>
+                      <h5 className="fw-bold text-white mb-1">{featuredData[0].title}</h5>
+                      <small className="text-white-50 mb-2">{featuredData[0].author?.username || "Tác giả"} · {featuredData[0].category?.name || "Thể loại"}</small>
                       <p className="text-white small mb-2" style={{ opacity: 0.85, fontSize: "0.78rem" }}>
-                        {featured[0].desc.slice(0, 100)}...
+                        {(featuredData[0].description || "").slice(0, 100)}...
                       </p>
                       <div className="d-flex gap-3">
-                        <small className="text-white-50"><i className="bi bi-journal-text me-1" />{featured[0].chapters} chương</small>
-                        <small className="text-white-50"><i className="bi bi-eye me-1" />{featured[0].views}</small>
+                        <small className="text-white-50"><i className="bi bi-journal-text me-1" />{featuredData[0].chapters} chương</small>
+                        <small className="text-white-50"><i className="bi bi-eye me-1" />{featuredData[0].views?.toLocaleString() || 0}</small>
                       </div>
                     </div>
                     <div className="position-absolute top-0 end-0 m-3">
@@ -229,16 +135,16 @@ export default function Home() {
                 {/* Small featured */}
                 <div className="col-md-6">
                   <div className="d-flex flex-column gap-3 h-100">
-                    {featured.slice(1).map((f) => (
+                    {featuredData.slice(1, 3).map((f: any) => (
                       <div key={f.title} className="card border-0 shadow-sm rounded-3 overflow-hidden flex-fill"
-                        style={{ background: f.color }}>
+                        style={{ background: f.color || "#0891b2" }}>
                         <div className="card-body d-flex flex-column justify-content-end p-3"
                           style={{ background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)" }}>
                           <span className="badge bg-primary mb-1" style={{ width: "fit-content", fontSize: "0.7rem" }}>
-                            {f.badge}
+                            {f.badge || "New"}
                           </span>
                           <div className="fw-semibold text-white" style={{ fontSize: "0.9rem" }}>{f.title}</div>
-                          <small className="text-white-50" style={{ fontSize: "0.75rem" }}>{f.author} · {f.chapters} chương</small>
+                          <small className="text-white-50" style={{ fontSize: "0.75rem" }}>{f.author?.username || "Tác giả"} · {f.chapters} chương</small>
                         </div>
                       </div>
                     ))}
@@ -260,25 +166,25 @@ export default function Home() {
               </div>
 
               <div className="row g-2">
-                {hotNovels.map((n) => (
+                {hotNovelsData.map((n: any) => (
                   <div key={n.title} className="col-6 col-md-3">
                     <Link href={`/truyen/${encodeURIComponent(n.title)}`} className="text-decoration-none">
                       <div className="card border-0 shadow-sm rounded-3 h-100 hover-card" style={{ transition: "transform 0.15s" }}>
                         <div className="rounded-top-3 d-flex align-items-center justify-content-center"
-                          style={{ height: 120, background: n.color }}>
+                          style={{ height: 120, background: n.color || "#7c3aed" }}>
                           <i className="bi bi-book-half text-white" style={{ fontSize: 36, opacity: 0.8 }} />
                         </div>
                         <div className="card-body p-2">
                           <div className="fw-semibold text-dark small text-truncate">{n.title}</div>
-                          <div className="text-muted" style={{ fontSize: "0.72rem" }}>{n.author}</div>
+                          <div className="text-muted" style={{ fontSize: "0.72rem" }}>{n.author?.username || "Tác giả"}</div>
                           <div className="d-flex justify-content-between align-items-center mt-1">
                             <span className="badge rounded-pill"
                               style={{ background: "#f0f0f0", color: "#555", fontSize: "0.65rem" }}>
-                              {n.genre}
+                              {n.category?.name || "Thể loại"}
                             </span>
                             <span className={`badge ${n.status === "Hoàn" ? "bg-success" : "bg-warning text-dark"}`}
                               style={{ fontSize: "0.65rem" }}>
-                              {n.status}
+                              {n.status === 'published' ? 'Đang ra' : n.status}
                             </span>
                           </div>
                           <div className="text-muted mt-1" style={{ fontSize: "0.7rem" }}>
@@ -306,9 +212,9 @@ export default function Home() {
 
               <div className="card border-0 shadow-sm rounded-3">
                 <div className="card-body p-0">
-                  {newUpdates.map((n, i) => (
+                  {newUpdatesData.map((n: any, i: number) => (
                     <div key={n.title}
-                      className={`d-flex align-items-center gap-3 px-3 py-2 ${i < newUpdates.length - 1 ? "border-bottom" : ""}`}
+                      className={`d-flex align-items-center gap-3 px-3 py-2 ${i < newUpdatesData.length - 1 ? "border-bottom" : ""}`}
                       style={{ transition: "background 0.1s", cursor: "pointer" }}>
                       <span className="text-muted fw-bold" style={{ width: 20, fontSize: "0.8rem", textAlign: "center" }}>{i + 1}</span>
                       <div className="flex-fill min-w-0">
@@ -345,19 +251,19 @@ export default function Home() {
                 </Link>
               </div>
               <div className="row g-2">
-                {hotNovels.filter(n => n.status === "Hoàn").map((n) => (
+                {hotNovelsData.filter((n: any) => n.status === "Hoàn").map((n: any) => (
                   <div key={n.title} className="col-md-6">
                     <Link href={`/truyen/${encodeURIComponent(n.title)}`} className="text-decoration-none">
                       <div className="card border-0 shadow-sm rounded-3 hover-card" style={{ transition: "transform 0.15s" }}>
                         <div className="card-body d-flex gap-3 p-3">
-                          <NovelCover color={n.color} size={52} />
+                          <NovelCover color={n.color || "#065f46"} size={52} />
                           <div className="flex-fill min-w-0">
                             <div className="fw-semibold text-dark small text-truncate">{n.title}</div>
-                            <div className="text-muted" style={{ fontSize: "0.72rem" }}>{n.author}</div>
+                            <div className="text-muted" style={{ fontSize: "0.72rem" }}>{n.author?.username || "Tác giả"}</div>
                             <div className="d-flex gap-2 mt-1">
                               <span className="badge bg-success" style={{ fontSize: "0.65rem" }}>Hoàn</span>
                               <span className="text-muted" style={{ fontSize: "0.7rem" }}>
-                                <i className="bi bi-eye me-1" />{n.views}
+                                <i className="bi bi-eye me-1" />{n.views?.toLocaleString() || 0}
                               </span>
                               <span className="text-muted" style={{ fontSize: "0.7rem" }}>
                                 <i className="bi bi-journal-text me-1" />{n.chapters.toLocaleString()}
@@ -391,7 +297,7 @@ export default function Home() {
                 </div>
               </div>
               <div className="card-body p-0 pt-2">
-                {rankings.daily.map((r, i) => (
+                {rankingsData.daily.map((r: any, i: number) => (
                   <div key={r.title} className="d-flex align-items-center gap-2 px-3 py-2 border-bottom">
                     <div className="fw-bold text-center flex-shrink-0"
                       style={{
@@ -404,10 +310,10 @@ export default function Home() {
                     </div>
                     <div className="flex-fill min-w-0">
                       <div className="fw-semibold text-truncate" style={{ fontSize: "0.82rem" }}>{r.title}</div>
-                      <div className="text-muted" style={{ fontSize: "0.7rem" }}>{r.author}</div>
+                      <div className="text-muted" style={{ fontSize: "0.7rem" }}>{r.author?.username || "Tác giả"}</div>
                     </div>
                     <small className="text-muted text-nowrap" style={{ fontSize: "0.7rem" }}>
-                      <i className="bi bi-eye me-1" />{r.views}
+                      <i className="bi bi-eye me-1" />{r.views?.toLocaleString() || 0}
                     </small>
                   </div>
                 ))}
@@ -424,7 +330,7 @@ export default function Home() {
               </div>
               <div className="card-body px-3 pt-0 pb-2">
                 <div className="row g-1">
-                  {categoryList.map((c) => (
+                  {categoryListData.map((c: any) => (
                     <div key={c.name} className="col-6">
                       <Link href={`/the-loai/${encodeURIComponent(c.name)}`}
                         className="text-decoration-none d-flex align-items-center gap-2 py-2 px-2 rounded-2">
@@ -469,82 +375,7 @@ export default function Home() {
       </div>
 
       {/* ── Footer ── */}
-      <footer style={{ background: "#1a1a2e", borderTop: "2px solid #e74c3c" }} className="mt-4">
-        <div className="container py-4">
-          <div className="row g-4 mb-4">
-            <div className="col-md-4">
-              <div className="d-flex align-items-center gap-2 mb-3">
-                <div className="d-flex align-items-center justify-content-center rounded-2"
-                  style={{ width: 36, height: 36, background: "#e74c3c" }}>
-                  <i className="bi bi-book-fill text-white" />
-                </div>
-                <span className="fw-bold text-white fs-5">TruyệnHay</span>
-              </div>
-              <p className="text-secondary small mb-3">
-                Kho truyện chữ online lớn nhất Việt Nam. Đọc truyện tiên hiệp, ngôn tình, kiếm hiệp... miễn phí, cập nhật nhanh nhất.
-              </p>
-              <div className="d-flex gap-2">
-                {["bi-facebook", "bi-twitter-x", "bi-discord", "bi-tiktok"].map((ic) => (
-                  <a key={ic} href="#"
-                    className="d-flex align-items-center justify-content-center rounded-circle text-white"
-                    style={{ width: 32, height: 32, background: "rgba(255,255,255,0.1)", fontSize: "0.9rem" }}>
-                    <i className={`bi ${ic}`} />
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            {[
-              {
-                title: "Thể loại phổ biến",
-                links: ["Tiên Hiệp", "Kiếm Hiệp", "Ngôn Tình", "Đô Thị", "Huyền Huyễn"],
-              },
-              {
-                title: "Hỗ trợ",
-                links: ["Về chúng tôi", "Chính sách", "Báo lỗi", "Liên hệ", "Tuyển dụng"],
-              },
-            ].map((col) => (
-              <div key={col.title} className="col-6 col-md-2">
-                <h6 className="fw-semibold text-white mb-3" style={{ fontSize: "0.85rem" }}>{col.title}</h6>
-                <ul className="list-unstyled mb-0">
-                  {col.links.map((l) => (
-                    <li key={l} className="mb-2">
-                      <Link href="/blog" className="text-secondary text-decoration-none" style={{ fontSize: "0.82rem" }}>
-                        {l}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-
-            <div className="col-md-3">
-              <h6 className="fw-semibold text-white mb-3" style={{ fontSize: "0.85rem" }}>
-                <i className="bi bi-bell me-1" />Nhận thông báo
-              </h6>
-              <p className="text-secondary small mb-2">Đăng ký để nhận thông báo truyện mới cập nhật mỗi ngày.</p>
-              <div className="input-group input-group-sm">
-                <input type="email" className="form-control border-0"
-                  placeholder="Email của bạn..."
-                  style={{ background: "rgba(255,255,255,0.1)", color: "#fff" }} />
-                <button className="btn btn-sm" style={{ background: "#e74c3c", color: "#fff" }}>
-                  Đăng ký
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-top pt-3 d-flex flex-wrap justify-content-between align-items-center gap-2"
-            style={{ borderColor: "rgba(255,255,255,0.1) !important" }}>
-            <small className="text-secondary">© 2024 TruyệnHay. All rights reserved.</small>
-            <div className="d-flex gap-3">
-              <Link href="#" className="text-secondary text-decoration-none small">Điều khoản</Link>
-              <Link href="#" className="text-secondary text-decoration-none small">Bảo mật</Link>
-              <Link href="/contact" className="text-secondary text-decoration-none small">Liên hệ</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <NovelFooter />
     </div>
   );
 }
